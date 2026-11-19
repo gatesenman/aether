@@ -1,4 +1,4 @@
-<p align="center"><img src="src/aether-0.6.0-src/editors/vscode/media/aether.png" alt="Aether Language" width="128"></p>
+<p align="center"><img src="editors/vscode/media/aether.png" alt="Aether Language" width="128"></p>
 
 # Aether 语言
 
@@ -20,10 +20,9 @@
 
 ## 从源码运行
 
-源码位于 `src/aether-0.6.0-src/`。本仓库不包含安装包。
+源码位于仓库根目录。本仓库不包含安装包。
 
 ```bash
-cd src/aether-0.6.0-src
 # Linux / macOS
 ./install.sh
 # Windows
@@ -34,22 +33,21 @@ aether doctor
 cd 我的项目
 aether serve        # 或 aether studio / aether ui
 ```
-
 也可用可编辑安装：`pip install -e .`（见 `pyproject.toml`）。原生运行时见 `native/`。
 
 ## 文档
 
 - [更新日志 0.6.0](changelog-0.6.0.md)
 - [0.6 自进化记录](evolution-0.6.md)
-- [源码说明](src/aether-0.6.0-src/README.md)
-- [语言规范](src/aether-0.6.0-src/docs/02-语言规范.md)
-- [架构](src/aether-0.6.0-src/docs/03-架构.md)
-- [IDE 说明](src/aether-0.6.0-src/ide/README-IDE.md)
-- [Windows 安装说明](src/aether-0.6.0-src/docs/windows-install.md)
+- [源码说明](README.original.md)
+- [语言规范](docs/02-语言规范.md)
+- [架构](docs/03-架构.md)
+- [IDE 说明](ide/README-IDE.md)
+- [Windows 安装说明](docs/windows-install.md)
 
 ## 许可证
 
-Python 包在 `src/aether-0.6.0-src/pyproject.toml` 中声明为 MIT。仓库根目录未附带 LICENSE 文件。编辑器资源还包含第三方字体/图标许可证。
+Python 包在 `pyproject.toml` 中声明为 MIT。仓库根目录未附带 LICENSE 文件。编辑器资源还包含第三方字体/图标许可证。
 
 ---
 
@@ -75,10 +73,9 @@ Python 包在 `src/aether-0.6.0-src/pyproject.toml` 中声明为 MIT。仓库根
 
 ## Getting started
 
-Source lives in `src/aether-0.6.0-src/`. This repository does not include installers.
+Source is at the repository root. This repository does not include installers.
 
 ```bash
-cd src/aether-0.6.0-src
 # Linux / macOS
 ./install.sh
 # Windows
@@ -89,20 +86,19 @@ aether doctor
 cd my-project
 aether serve        # or aether studio / aether ui
 ```
-
 Alternatively: `pip install -e .` (see `pyproject.toml`). The native runtime is under `native/`.
 
 ## Documentation
 
 - [更新日志 0.6.0](changelog-0.6.0.md)
 - [0.6 自进化记录](evolution-0.6.md)
-- [源码说明](src/aether-0.6.0-src/README.md)
-- [语言规范](src/aether-0.6.0-src/docs/02-语言规范.md)
-- [架构](src/aether-0.6.0-src/docs/03-架构.md)
-- [IDE 说明](src/aether-0.6.0-src/ide/README-IDE.md)
-- [Windows 安装说明](src/aether-0.6.0-src/docs/windows-install.md)
+- [源码说明](README.original.md)
+- [语言规范](docs/02-语言规范.md)
+- [架构](docs/03-架构.md)
+- [IDE 说明](ide/README-IDE.md)
+- [Windows 安装说明](docs/windows-install.md)
 
 ## License
 
-The Python package declares MIT in `src/aether-0.6.0-src/pyproject.toml`. There is no LICENSE file at the repository root. Editor assets also include third-party font/icon licenses.
+The Python package declares MIT in `pyproject.toml`. There is no LICENSE file at the repository root. Editor assets also include third-party font/icon licenses.
 
