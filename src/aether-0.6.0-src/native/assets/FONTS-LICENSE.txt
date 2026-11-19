@@ -1,0 +1,2 @@
+aether-ui.otf / aether-mono.otf 是 Noto Sans CJK SC / Noto Sans Mono CJK SC 的子集（GB2312 + ASCII + 常用符号），
+版权 © 2014-2021 Adobe (http://www.adobe.com/)，依据 SIL Open Font License 1.1 授权：https://openfontlicense.org

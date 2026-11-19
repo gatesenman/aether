@@ -1,0 +1,594 @@
+{
+  "name": "aether-vscode",
+  "displayName": "Aether 语言支持",
+  "description": "Aether（人与智能体共用的编程语言）：语言服务器、调试器（断点/单步）、MVC 架构视图（ER 图、控制器、接口）、数据浏览、接口测试、应用预览、智能体面板、新建项目向导、一键运行与部署。",
+  "version": "0.6.0",
+  "publisher": "aether-lang",
+  "license": "MIT",
+  "icon": "media/aether.png",
+  "repository": {
+    "type": "git",
+    "url": "https://example.invalid/aether-lang/aether.git"
+  },
+  "engines": {
+    "vscode": "^1.82.0"
+  },
+  "categories": [
+    "Programming Languages",
+    "Linters",
+    "Formatters",
+    "Testing",
+    "Debuggers",
+    "AI"
+  ],
+  "keywords": [
+    "aether",
+    "lsp",
+    "agent",
+    "dsl"
+  ],
+  "main": "./dist/extension.js",
+  "activationEvents": [
+    "onLanguage:aether",
+    "workspaceContains:**/*.ae",
+    "onStartupFinished",
+    "onDebug",
+    "onView:aether.agent",
+    "onCommand:aether.newProject"
+  ],
+  "contributes": {
+    "languages": [
+      {
+        "id": "aether",
+        "aliases": [
+          "Aether",
+          "aether"
+        ],
+        "extensions": [
+          ".ae"
+        ],
+        "configuration": "./language-configuration.json",
+        "icon": {
+          "light": "./media/file-icon.svg",
+          "dark": "./media/file-icon.svg"
+        }
+      }
+    ],
+    "grammars": [
+      {
+        "language": "aether",
+        "scopeName": "source.aether",
+        "path": "./syntaxes/aether.tmLanguage.json"
+      }
+    ],
+    "themes": [
+      {
+        "label": "Aether Dark",
+        "uiTheme": "vs-dark",
+        "path": "./themes/aether-dark.json"
+      }
+    ],
+    "commands": [
+      {
+        "command": "aether.openPreview",
+        "title": "打开应用预览",
+        "category": "Aether",
+        "icon": "$(open-preview)"
+      },
+      {
+        "command": "aether.askAgent",
+        "title": "让智能体修改…",
+        "category": "Aether",
+        "icon": "$(sparkle)"
+      },
+      {
+        "command": "aether.explain",
+        "title": "解释程序（自然语言投影）",
+        "category": "Aether",
+        "icon": "$(book)"
+      },
+      {
+        "command": "aether.contracts",
+        "title": "显示契约",
+        "category": "Aether",
+        "icon": "$(shield)"
+      },
+      {
+        "command": "aether.run",
+        "title": "运行程序",
+        "category": "Aether",
+        "icon": "$(play)"
+      },
+      {
+        "command": "aether.runFlow",
+        "title": "运行流程…",
+        "category": "Aether",
+        "icon": "$(play-circle)"
+      },
+      {
+        "command": "aether.undo",
+        "title": "历史：语义撤销",
+        "category": "Aether",
+        "icon": "$(discard)"
+      },
+      {
+        "command": "aether.redo",
+        "title": "历史：重做",
+        "category": "Aether",
+        "icon": "$(redo)"
+      },
+      {
+        "command": "aether.refreshHistory",
+        "title": "刷新历史",
+        "category": "Aether",
+        "icon": "$(refresh)"
+      },
+      {
+        "command": "aether.restartServer",
+        "title": "重启语言服务器",
+        "category": "Aether",
+        "icon": "$(debug-restart)"
+      },
+      {
+        "command": "aether.debug",
+        "title": "调试运行（断点、单步）",
+        "category": "Aether",
+        "icon": "$(debug-alt)"
+      },
+      {
+        "command": "aether.debugTests",
+        "title": "调试测试",
+        "category": "Aether",
+        "icon": "$(debug-alt-small)"
+      },
+      {
+        "command": "aether.showArchitecture",
+        "title": "架构视图（MVC / ER 图 / 控制器）",
+        "category": "Aether",
+        "icon": "$(layers)"
+      },
+      {
+        "command": "aether.dataBrowser",
+        "title": "数据浏览",
+        "category": "Aether",
+        "icon": "$(database)"
+      },
+      {
+        "command": "aether.apiTester",
+        "title": "接口测试",
+        "category": "Aether",
+        "icon": "$(plug)"
+      },
+      {
+        "command": "aether.newProject",
+        "title": "新建项目…",
+        "category": "Aether",
+        "icon": "$(new-folder)"
+      },
+      {
+        "command": "aether.serveApp",
+        "title": "运行应用（浏览器打开）",
+        "category": "Aether",
+        "icon": "$(globe)"
+      },
+      {
+        "command": "aether.agent.acceptLatest",
+        "title": "接受智能体的最新建议",
+        "category": "Aether"
+      },
+      {
+        "command": "aether.agentContext",
+        "title": "给 Agent 的上下文切片（复制）",
+        "category": "Aether"
+      },
+      {
+        "command": "aether.compactView",
+        "title": "查看 compact / skeleton 投影",
+        "category": "Aether"
+      },
+      {
+        "command": "aether.deploy",
+        "title": "一键部署",
+        "category": "Aether",
+        "icon": "$(cloud-upload)"
+      },
+      {
+        "command": "aether.explainCode",
+        "title": "Aether: 解释错误码",
+        "icon": "$(question)"
+      },
+      {
+        "command": "aether.generateAgentsMd",
+        "title": "Aether: 生成 AGENTS.md",
+        "icon": "$(hubot)"
+      },
+      {
+        "command": "aether.migratePlan",
+        "title": "Aether: 数据迁移计划",
+        "icon": "$(database)"
+      }
+    ],
+    "menus": {
+      "editor/title": [
+        {
+          "command": "aether.run",
+          "when": "editorLangId == aether",
+          "group": "navigation@1"
+        },
+        {
+          "command": "aether.openPreview",
+          "when": "editorLangId == aether",
+          "group": "navigation@2"
+        },
+        {
+          "command": "aether.askAgent",
+          "when": "editorLangId == aether",
+          "group": "navigation@3"
+        },
+        {
+          "command": "aether.debug",
+          "when": "editorLangId == aether",
+          "group": "navigation@0"
+        },
+        {
+          "command": "aether.showArchitecture",
+          "when": "editorLangId == aether",
+          "group": "navigation@4"
+        }
+      ],
+      "view/title": [
+        {
+          "command": "aether.undo",
+          "when": "view == aether.history",
+          "group": "navigation@1"
+        },
+        {
+          "command": "aether.redo",
+          "when": "view == aether.history",
+          "group": "navigation@2"
+        },
+        {
+          "command": "aether.refreshHistory",
+          "when": "view == aether.history",
+          "group": "navigation@3"
+        },
+        {
+          "command": "aether.showArchitecture",
+          "when": "view == aether.modelView",
+          "group": "navigation@1"
+        },
+        {
+          "command": "aether.dataBrowser",
+          "when": "view == aether.modelView",
+          "group": "navigation@2"
+        },
+        {
+          "command": "aether.apiTester",
+          "when": "view == aether.controllerView",
+          "group": "navigation@1"
+        },
+        {
+          "command": "aether.showArchitecture",
+          "when": "view == aether.controllerView",
+          "group": "navigation@2"
+        },
+        {
+          "command": "aether.openPreview",
+          "when": "view == aether.viewView",
+          "group": "navigation@1"
+        },
+        {
+          "command": "aether.newProject",
+          "when": "view == workbench.explorer.emptyView",
+          "group": "navigation"
+        }
+      ]
+    },
+    "keybindings": [
+      {
+        "command": "aether.openPreview",
+        "key": "ctrl+shift+v",
+        "mac": "cmd+shift+v",
+        "when": "editorLangId == aether"
+      },
+      {
+        "command": "aether.askAgent",
+        "key": "ctrl+alt+i",
+        "mac": "cmd+alt+i"
+      },
+      {
+        "command": "aether.debug",
+        "key": "f5",
+        "when": "editorLangId == aether && !inDebugMode"
+      },
+      {
+        "command": "aether.run",
+        "key": "ctrl+f5",
+        "when": "editorLangId == aether && !inDebugMode"
+      },
+      {
+        "command": "aether.showArchitecture",
+        "key": "ctrl+alt+m",
+        "when": "editorLangId == aether"
+      }
+    ],
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "aether",
+          "title": "Aether",
+          "icon": "media/activity.svg"
+        }
+      ]
+    },
+    "views": {
+      "aether": [
+        {
+          "type": "webview",
+          "id": "aether.agent",
+          "name": "智能体"
+        },
+        {
+          "id": "aether.modelView",
+          "name": "模型 Model（数据）",
+          "icon": "media/activity.svg"
+        },
+        {
+          "id": "aether.controllerView",
+          "name": "控制 Controller（动作 · 流程 · 权限 · 接口）"
+        },
+        {
+          "id": "aether.viewView",
+          "name": "界面 View（页面）"
+        },
+        {
+          "id": "aether.history",
+          "name": "历史（语义）",
+          "visibility": "collapsed"
+        },
+        {
+          "id": "aether.contractsView",
+          "name": "契约",
+          "visibility": "collapsed"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "Aether",
+      "properties": {
+        "aether.server.path": {
+          "type": "string",
+          "default": "",
+          "description": "aether 原生二进制路径；留空则使用扩展内置的二进制或 PATH 中的 aether。"
+        },
+        "aether.trace.server": {
+          "type": "string",
+          "enum": [
+            "off",
+            "messages",
+            "verbose"
+          ],
+          "default": "off",
+          "description": "跟踪 LSP 通信。"
+        },
+        "aether.llm.baseUrl": {
+          "type": "string",
+          "default": "",
+          "description": "OpenAI 兼容接口地址（如 https://api.openai.com/v1，或本地 Ollama http://127.0.0.1:11434/v1）。留空且未设置密钥时使用内置 mock 智能体。"
+        },
+        "aether.llm.model": {
+          "type": "string",
+          "default": "",
+          "description": "模型名称，例如 gpt-4o-mini、qwen2.5-coder。"
+        },
+        "aether.llm.apiKey": {
+          "type": "string",
+          "default": "",
+          "description": "API 密钥（本地模型可留空）。"
+        },
+        "aether.projectsDir": {
+          "type": "string",
+          "default": "",
+          "description": "新建项目的默认位置（默认 ~/AetherProjects）。"
+        },
+        "aether.serve.port": {
+          "type": "number",
+          "default": 8080,
+          "description": "「运行应用」使用的端口。"
+        },
+        "aether.deploy.port": {
+          "type": "number",
+          "default": 8090,
+          "description": "「一键部署」本机启动使用的端口。"
+        },
+        "aether.agent.revealOnStartup": {
+          "type": "boolean",
+          "default": false,
+          "description": "启动时自动显示智能体面板。"
+        }
+      }
+    },
+    "configurationDefaults": {
+      "[aether]": {
+        "editor.semanticHighlighting.enabled": true,
+        "editor.tabSize": 2,
+        "editor.insertSpaces": true,
+        "editor.formatOnSave": false,
+        "editor.unicodeHighlight.ambiguousCharacters": false,
+        "editor.unicodeHighlight.invisibleCharacters": false
+      }
+    },
+    "viewsWelcome": [
+      {
+        "view": "workbench.explorer.emptyView",
+        "contents": "还没有打开项目。\n[$(new-folder) 新建 Aether 项目](command:aether.newProject)\n[$(book) 打开入门教程](command:workbench.action.openWalkthrough?%22aether-lang.aether-vscode%23aether.gettingStarted%22)"
+      },
+      {
+        "view": "aether.modelView",
+        "contents": "打开一个 .ae 文件后，这里显示它的数据模型（实体、字段、规则、关系）。\n[$(new-folder) 新建项目](command:aether.newProject)"
+      }
+    ],
+    "breakpoints": [
+      {
+        "language": "aether"
+      }
+    ],
+    "debuggers": [
+      {
+        "type": "aether",
+        "label": "Aether 调试",
+        "languages": [
+          "aether"
+        ],
+        "configurationAttributes": {
+          "launch": {
+            "required": [
+              "program"
+            ],
+            "properties": {
+              "program": {
+                "type": "string",
+                "description": "要调试的 .ae 文件",
+                "default": "${file}"
+              },
+              "mode": {
+                "type": "string",
+                "enum": [
+                  "run",
+                  "test",
+                  "flow"
+                ],
+                "default": "run",
+                "description": "run：执行顶层代码；test：运行测试；flow：运行一个流程"
+              },
+              "flow": {
+                "type": "string",
+                "description": "mode 为 flow 时要运行的流程名"
+              },
+              "stopOnEntry": {
+                "type": "boolean",
+                "default": false,
+                "description": "启动后停在第一条语句"
+              }
+            }
+          }
+        },
+        "initialConfigurations": [
+          {
+            "type": "aether",
+            "request": "launch",
+            "name": "Aether: 调试当前文件",
+            "program": "${file}",
+            "mode": "run"
+          }
+        ],
+        "configurationSnippets": [
+          {
+            "label": "Aether: 调试",
+            "description": "调试 Aether 程序",
+            "body": {
+              "type": "aether",
+              "request": "launch",
+              "name": "Aether: 调试",
+              "program": "^\"\\${file}\"",
+              "mode": "run"
+            }
+          },
+          {
+            "label": "Aether: 调试测试",
+            "body": {
+              "type": "aether",
+              "request": "launch",
+              "name": "Aether: 调试测试",
+              "program": "^\"\\${file}\"",
+              "mode": "test"
+            }
+          }
+        ]
+      }
+    ],
+    "walkthroughs": [
+      {
+        "id": "aether.gettingStarted",
+        "title": "Aether 入门（零基础）",
+        "description": "六步学会：新建项目、理解 MVC、预览、智能体、调试、部署。",
+        "steps": [
+          {
+            "id": "new",
+            "title": "新建一个项目",
+            "description": "选择模板（推荐「待办清单」或「客户管理」）创建项目，IDE 会自动打开 main.ae 和中文教程。\n[新建项目](command:aether.newProject)",
+            "media": {
+              "markdown": "media/walkthrough/new.md"
+            }
+          },
+          {
+            "id": "mvc",
+            "title": "认识 Model / Controller / View",
+            "description": "Aether 程序分三层：entity（模型）、action/flow/auth（控制）、view（界面）。左侧 Aether 图标里有三层的浏览器，架构视图里有 ER 图和接口表。\n[打开架构视图](command:aether.showArchitecture)",
+            "media": {
+              "markdown": "media/walkthrough/mvc.md"
+            }
+          },
+          {
+            "id": "preview",
+            "title": "预览并操作应用",
+            "description": "按 Ctrl+Shift+V 打开实时预览；数据浏览器可以直接查看和修改保存的记录。\n[打开预览](command:aether.openPreview)\n[数据浏览](command:aether.dataBrowser)",
+            "media": {
+              "markdown": "media/walkthrough/preview.md"
+            }
+          },
+          {
+            "id": "agent",
+            "title": "让智能体帮你改",
+            "description": "在右侧「Aether 智能体」里用中文描述需求，查看差异，接受后自动记入历史，可随时撤销。\n[让智能体修改](command:aether.askAgent)",
+            "media": {
+              "markdown": "media/walkthrough/agent.md"
+            }
+          },
+          {
+            "id": "debug",
+            "title": "调试：断点与单步",
+            "description": "点击行号左侧设置断点，按 F5 开始调试，用 F10 单步、F11 进入函数，在「变量」里查看值。\n[开始调试](command:aether.debug)",
+            "media": {
+              "markdown": "media/walkthrough/debug.md"
+            }
+          },
+          {
+            "id": "deploy",
+            "title": "运行与部署",
+            "description": "「运行应用」在浏览器里打开；「一键部署」生成部署包（含 Dockerfile、run.sh）并在本机启动。\n[一键部署](command:aether.deploy)",
+            "media": {
+              "markdown": "media/walkthrough/deploy.md"
+            }
+          }
+        ]
+      }
+    ],
+    "mcpServerDefinitionProviders": [
+      {
+        "id": "aether.mcp",
+        "label": "Aether 语言工具 (aether mcp)"
+      }
+    ]
+  },
+  "scripts": {
+    "build": "esbuild src/extension.ts --bundle --outfile=dist/extension.js --external:vscode --format=cjs --platform=node --target=node18 --minify",
+    "test": "node test/runTest.js"
+  },
+  "author": "",
+  "dependencies": {
+    "vscode-languageclient": "^9.0.1"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.82.0",
+    "@vscode/vsce": "^4.0.0",
+    "esbuild": "^0.28.2"
+  },
+  "capabilities": {
+    "untrustedWorkspaces": {
+      "supported": "limited",
+      "description": "受限模式下提供全部语言功能、预览、架构视图与智能体建议；「运行应用」「一键部署」会启动进程，需要先信任此文件夹。"
+    },
+    "virtualWorkspaces": false
+  }
+}

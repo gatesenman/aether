@@ -1,0 +1,17 @@
+fn f(x: Int) -> Int { print(x)
+ x + yy }
+let a: Int = "s"
+f(1, 2)
+type S = A | B(x: Int)
+fn g(s: S) -> Int { match s { C => 1, _ => 2 } }
+fn h() -> Text { 42 }
+entity E { n: Int = "x"  n: Text }
+view V {
+  list Nope
+  table E missing
+  button "b" -> nowhere
+  widget E
+}
+fn m(x: Int) -> Int requires zz > 0 { match x { 1 => 1 } }
+let w = "a" - [1]
+example 1 + 1

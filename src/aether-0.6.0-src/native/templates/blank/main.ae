@@ -1,0 +1,26 @@
+// 空白项目：从这里开始。按 F5 运行，Ctrl+Shift+V 预览，Ctrl+Alt+I 让智能体帮你修改。
+module 我的应用
+
+// Model（模型）：要保存什么数据
+entity Item {
+  name: Text
+  done: Bool = false
+}
+
+// Controller（控制）：能对数据做什么
+action toggle(i: Item) {
+  i.done = not i.done
+}
+
+// View（界面）：用户看到什么
+view 首页 {
+  title "我的应用"
+  stat "总数" count(Item)
+  form Item
+  list Item name
+}
+
+test "新建条目默认未完成" {
+  let i = insert(Item, {name: "示例"})
+  assert(i.done == false)
+}

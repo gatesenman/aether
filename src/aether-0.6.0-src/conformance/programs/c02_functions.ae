@@ -1,0 +1,32 @@
+type Tree = Leaf | Node(l: Tree, v: Int, r: Tree)
+fn insert(t: Tree, x: Int) -> Tree {
+  match t {
+    Leaf => Node(Leaf, x, Leaf),
+    Node(l, v, r) => if x < v { Node(insert(l, x), v, r) } else { Node(l, v, insert(r, x)) }
+  }
+}
+fn walk(t: Tree) -> List {
+  match t { Leaf => [], Node(l, v, r) => walk(l) + [v] + walk(r) }
+}
+let t = reduce([5, 3, 8, 1], fn(acc, x) => insert(acc, x), Leaf)
+print(walk(t))
+print(Node(Leaf, 1, Leaf))
+fn compose(f: fn, g: fn) -> fn { fn(x) => f(g(x)) }
+let inc = fn(x) => x + 1
+print(compose(inc, fn(x) => x * 10)(4))
+fn counter() -> fn { var n = 0
+ fn() { n += 1; n } }
+let c = counter()
+c(); c()
+print(c())
+fn early(x: Int) -> Text { if x > 0 { return "pos" }
+ "non-pos" }
+print(early(1), early(-1))
+fn desc(x) -> Text {
+  match x { 0 => "zero", [a, b] => "pair {a},{b}", "hi" => "greeting", n if n > 100 => "big", _ => "other" }
+}
+print(map([0, [1, 2], "hi", 500, 3], desc))
+print(range(5) |> map(fn(x) => x * 2) |> filter(fn(x) => x > 2) |> sum)
+let jobs = map([10, 11, 12], fn(n) => spawn fib(n))
+fn fib(n: Int) -> Int { if n < 2 { n } else { fib(n - 1) + fib(n - 2) } }
+print(await jobs)

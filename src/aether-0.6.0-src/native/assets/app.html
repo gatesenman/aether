@@ -1,0 +1,57 @@
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Aether App</title><style>
+*{box-sizing:border-box}body{font-family:system-ui,-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;margin:0;background:#f5f6fa;color:#1d2433}
+header{background:var(--p,linear-gradient(90deg,#4f46e5,#7c3aed));color:#fff;padding:14px 22px;display:flex;gap:18px;align-items:center}
+header b{font-size:18px}nav a{color:#e0e7ff;margin-right:12px;cursor:pointer;text-decoration:none}nav a.on{color:#fff;font-weight:600;border-bottom:2px solid #fff}
+main{max-width:860px;margin:20px auto;padding:0 16px}.card{background:#fff;border-radius:var(--r,12px);padding:16px 18px;margin-bottom:14px;box-shadow:0 1px 3px #0001}
+h1{font-size:24px;margin:6px 0 14px}.row{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #eef}
+.row:last-child{border:0}.grow{flex:1}.muted{color:#778}button{background:var(--p,#4f46e5);color:#fff;border:0;border-radius:8px;padding:6px 12px;cursor:pointer}
+button.ghost{background:#eef;color:#334}button.del{background:#fee;color:#b91c1c}input,textarea{border:1px solid #d5d8e6;border-radius:8px;padding:7px 9px;font:inherit}
+form{display:flex;flex-wrap:wrap;gap:8px;align-items:center}.stat{display:inline-block;margin-right:28px}.stat .v{font-size:28px;font-weight:700;color:var(--p,#4f46e5)}
+.done{text-decoration:line-through;color:#99a}.bar{background:#818cf8;height:18px;border-radius:4px}.err{color:#b91c1c}table{width:100%;border-collapse:collapse}td,th{text-align:left;padding:6px;border-bottom:1px solid #eef}
+@font-face{font-family:codicon;src:url("_aether/codicon.ttf") format("truetype")}.ci{font-family:codicon;font-style:normal;vertical-align:-2px;margin-right:4px;font-size:15px}.lay-row{display:flex;gap:14px;flex-wrap:wrap}.lay-row>*{flex:1;min-width:200px}.lay-column{display:flex;flex-direction:column;gap:10px}.lay-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px}
+.lay-card{background:#fff;border-radius:var(--r,12px);padding:14px 16px;margin-bottom:14px;box-shadow:0 1px 3px #0001}.lay-card>h4{margin:0 0 8px}.lay-card .card{box-shadow:none;padding:4px 0;margin:0}
+#authbox{display:flex;gap:8px;align-items:center}#login{position:fixed;inset:0;background:#0006;display:none;align-items:center;justify-content:center}#login .card{width:320px}#login input{width:100%;margin:6px 0}
+img.ae{max-width:100%;border-radius:8px}</style></head><body><header><b id="mod">Aether</b><nav id="nav"></nav><span style="flex:1"></span><span id="flows"></span><span id="authbox"></span><select id="role" title="当前角色（能力权限）" onchange="localStorage.aeRole=this.value;load()" style="border-radius:6px"><option>user</option><option>admin</option><option>guest</option></select></header><main id="app"></main><div id="login"><div class="card"><h3 id="lt">登录</h3><input id="lu" placeholder="用户名"><input id="lp" type="password" placeholder="密码（至少 6 位）"><div class="err" id="le"></div><button onclick="doAuth('login')">登录</button> <button class="ghost" onclick="doAuth('signup')">注册新账号</button> <button class="ghost" onclick="hideLogin()">取消</button></div></div><script>
+const B=location.pathname.replace(/\/$/,'');let meta,cur=0;
+const role=()=>localStorage.aeRole||'user';const tok=()=>localStorage['aeTok'+B]||'';
+const api=(p,o={})=>fetch(B+p,{headers:{'Content-Type':'application/json','X-Aether-Role':role(),...(tok()?{Authorization:'Bearer '+tok()}:{})},...o}).then(async r=>{const j=await r.json();if(r.status==401&&meta&&meta.auth)showLogin();return j});
+let me=null;function showLogin(){document.getElementById('login').style.display='flex'}function hideLogin(){document.getElementById('login').style.display='none'}
+async function doAuth(k){const r=await api('/api/_auth/'+k,{method:'POST',body:JSON.stringify({username:lu.value,password:lp.value})});if(r.error){le.textContent=r.error;return}localStorage['aeTok'+B]=r.token;hideLogin();load()}
+function logout(){localStorage.removeItem('aeTok'+B);load()}
+const css=st=>!st?'':Object.entries(st).map(([k,v])=>({color:'color:'+v,bg:'background:'+v,background:'background:'+v,size:'font-size:'+v+'px',weight:'font-weight:'+v,align:'text-align:'+v,pad:'padding:'+v+'px',padding:'padding:'+v+'px',gap:'gap:'+v+'px',width:'width:'+v+(typeof v=='number'?'px':''),radius:'border-radius:'+v+'px',border:'border:'+v,font:'font-family:'+v}[k]||'')).filter(Boolean).join(';');
+async function flow(n){const r=await api('/api/flow/'+n,{method:'POST',body:'{}'});if(r.error){alert(r.error);return}alert('流程 '+n+' #'+r.run+(r.ok?' 完成':' 失败（可在流程记录中恢复）')+'\n'+r.steps.map(s=>(s.ok?'[成功] ':'[失败] ')+s.step+(s.attempts>1?' (尝试 '+s.attempts+' 次)':'')+(s.error?' — '+s.error:'')).join('\n'));load()}
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+async function load(){meta=await api('/api/_meta');const th=meta.theme||{};const R=document.documentElement.style;if(th.primary){R.setProperty('--p',th.primary)}if(th.radius)R.setProperty('--r',th.radius+'px');if(th.font)document.body.style.fontFamily=th.font;if(th.background)document.body.style.background=th.background;
+ const ab=document.getElementById('authbox'),rs=document.getElementById('role');if(meta.auth){rs.style.display='none';me=(await api('/api/_auth/me')).user;ab.innerHTML=me?`<i class="ci">&#xeb99;</i>${esc(me.username)} <span class="muted" style="color:#e0e7ff">(${esc(me.role)})</span> <button class="ghost" onclick="logout()">退出</button>`:`<button class="ghost" onclick="showLogin()"><i class="ci">&#xeb99;</i>登录 / 注册</button>`;if(!me&&meta.auth.login=='required'){showLogin()}}else{ab.innerHTML='';rs.style.display=''}document.getElementById('mod').textContent=meta.module;document.getElementById('role').value=role();
+ document.getElementById('flows').innerHTML=(meta.flows||[]).map(f=>`<button class="ghost" onclick="flow('${f}')"><i class="ci">&#xeb2c;</i>${esc(f)}</button>`).join(' ');render()}
+function ent(n){return meta.entities.find(e=>e.name==n)}
+async function render(){const v=meta.views[cur]||{items:[]};
+ document.getElementById('nav').innerHTML=meta.views.map((x,i)=>`<a class="${i==cur?'on':''}" onclick="cur=${i};render()">${esc(x.name)}</a>`).join('');
+ let h='';const ps=v.items.find(x=>x.kind=='style');for(const it of v.items){h+=await el(it)}const A=document.getElementById('app');A.innerHTML=h;A.style.cssText=ps?css(ps.style):''}
+async function kids(it){let h='';for(const c of it.children||[]){if(c.kind!='style')h+=await el(c)}return h}
+async function el(it){const st=css(it.style)+(it.children?';'+css((it.children.find(c=>c.kind=='style')||{}).style):'');const w=h=>st?`<div style="${st}">${h}</div>`:h;
+ if(it.kind=='row'||it.kind=='column'||it.kind=='grid')return `<div class="lay-${it.kind}" style="${st}">${it.title?`<h4 style="flex-basis:100%;margin:0">${esc(it.title)}</h4>`:''}${await kids(it)}</div>`;
+ if(it.kind=='card')return `<div class="lay-card" style="${st}">${it.title?`<h4>${esc(it.title)}</h4>`:''}${await kids(it)}</div>`;
+ if(it.kind=='image')return w(`<img class="ae" src="${esc(it.src)}" alt="${esc(it.text||'')}">`);if(it.kind=='link')return w(`<a href="${esc(it.src)}" target="_blank">${esc(it.text||it.src)}</a>`);if(it.kind=='style')return '';
+ return w(await el0(it))}
+async function el0(it){switch(it.kind){
+ case 'title':return `<h1>${esc(it.text)}</h1>`;case 'text':return `<p class="card">${esc(it.text)}</p>`;case 'section':return `<h3>${esc(it.text)}</h3>`;
+ case 'error':return `<div class="card err"><i class="ci">&#xea6c;</i>${esc(it.text)}</div>`;
+ case 'stat':return `<div class="card stat"><div class="muted">${esc(it.label)}</div><div class="v">${esc(it.value)}</div></div>`;
+ case 'button':{const a=meta.actions.find(x=>x.name==it.action)||{};return `<button onclick="act('${it.action}',{})" title="${a.allow&&a.allow.length?'需要角色: '+a.allow.join('/'):''}">${a.allow&&a.allow.length?'<i class="ci">&#xea75;</i>':''}${esc(it.label)}</button> `}
+ case 'form':{const e=ent(it.entity);return `<div class="card"><form onsubmit="return add(event,'${e.name}')">`+e.fields.map(f=>f.type=='Bool'?`<label><input type="checkbox" name="${f.name}"> ${f.name}</label>`:`<input name="${f.name}" placeholder="${f.name} (${f.type})" ${f.type=='Int'||f.type=='Float'?'type=number step=any':''}>`).join('')+`<button>＋ 新增 ${e.name}</button></form></div>`}
+ case 'list':case 'table':{const e=ent(it.entity);const rows=await api('/api/'+e.name);
+  if(it.kind=='table')return `<div class="card"><table><tr><th>id</th>${e.fields.map(f=>`<th>${f.name}</th>`).join('')}<th></th></tr>${rows.map(r=>`<tr><td>${r.id}</td>${e.fields.map(f=>`<td>${esc(r[f.name])}</td>`).join('')}<td>${btns(e,r)}</td></tr>`).join('')}</table></div>`;
+  const lf=it.label_field||(e.fields.find(f=>f.type=='Text')||e.fields[0]||{}).name;const bf=e.fields.find(f=>f.type=='Bool');
+  return `<div class="card">${rows.length?'':'<span class="muted">暂无数据</span>'}${rows.map(r=>`<div class="row"><span class="grow ${bf&&r[bf.name]?'done':''}">${esc(r[lf])} <span class="muted">${e.fields.filter(f=>f.name!=lf).map(f=>f.name+': '+esc(r[f.name])).join(' · ')}</span></span>${btns(e,r)}</div>`).join('')}</div>`}
+ case 'chart':{const e=ent(it.entity);const rows=await api('/api/'+e.name);const f=it.field;const mx=Math.max(1,...rows.map(r=>+r[f]||0));const lf=(e.fields.find(x=>x.type=='Text')||{}).name;
+  return `<div class="card">${rows.map(r=>`<div class="row"><span style="width:140px">${esc(r[lf])}</span><div class="bar" style="width:${(+r[f]||0)/mx*60}%"></div>${esc(r[f])}</div>`).join('')}</div>`}
+ default:return ''}}
+function btns(e,r){return e.row_actions.map(a=>`<button class="ghost" onclick="act('${a}',{${'x'}:${r.id}},'${e.name}')">${a}</button>`).join(' ')+` <button class="del" onclick="del('${e.name}',${r.id})">删除</button>`}
+async function add(ev,n){ev.preventDefault();const fd=new FormData(ev.target),o={};for(const f of ent(n).fields){o[f.name]=f.type=='Bool'?fd.has(f.name):(f.type=='Int'||f.type=='Float')?+fd.get(f.name):fd.get(f.name)}
+ await api('/api/'+n,{method:'POST',body:JSON.stringify(o)});load();return false}
+async function del(n,id){await api('/api/'+n+'/'+id,{method:'DELETE'});load()}
+async function act(a,args,en){const spec=meta.actions.find(x=>x.name==a);const body={};if(en&&spec.params[0])body[spec.params[0].name]=args.x;
+ const r=await api('/api/action/'+a,{method:'POST',body:JSON.stringify(body)});if(r.error)alert(r.error);load()}
+load()</script></body></html>

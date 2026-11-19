@@ -1,0 +1,89 @@
+// 客户管理（CRM）—— 一个清楚展示 M / V / C 三层的示例
+// ┌────────────┬──────────────────────────────┬────────────────────────────┐
+// │ 层         │ Aether 写法                  │ 自动得到                   │
+// ├────────────┼──────────────────────────────┼────────────────────────────┤
+// │ Model 模型 │ entity + 字段 + invariant     │ 数据表、校验、CRUD 接口     │
+// │ Controller │ action / flow / auth          │ 业务接口、权限、可恢复流程 │
+// │ View 界面  │ view / theme                  │ 页面、表单、列表、布局     │
+// └────────────┴──────────────────────────────┴────────────────────────────┘
+module 客户管理
+
+// ===================== Model（模型层） =====================
+entity Customer {
+  name: Text
+  phone: Text = ""
+  level: Text = "普通"
+  invariant len(name) > 0
+}
+
+entity Deal {
+  title: Text
+  customer_id: Int          // 关系：每个商机属于一个客户（Deal N:1 Customer）
+  amount: Int = 0
+  stage: Text = "线索"
+  invariant amount >= 0
+}
+
+// ===================== Controller（控制层） =====================
+auth {
+  roles admin, sales
+  default sales
+  signup open
+  login required
+  can sales write Customer, Deal
+}
+
+fn total_amount() -> Int ! db {
+  let n = 0
+  for d in all(Deal) { n += d.amount }
+  n
+}
+
+action advance(d: Deal) allow sales
+  requires d.stage != "成交"
+{
+  if d.stage == "线索" { d.stage = "谈判" } else { d.stage = "成交" }
+}
+
+action upgrade(c: Customer) allow admin {
+  c.level = "VIP"
+}
+
+flow 每周报告 {
+  step "统计" retry 2 backoff 100ms {
+    ctx.total = total_amount()
+    ctx.deals = count(Deal)
+  }
+  step "生成报告" {
+    ctx.report = "本周商机 {ctx.deals} 个，总金额 {ctx.total}"
+    print(ctx.report)
+  }
+}
+
+// ===================== View（界面层） =====================
+theme { primary: "#2563eb", radius: 10 }
+
+view 总览 {
+  title "客户管理"
+  row {
+    card "客户" { stat "客户数" count(Customer) }
+    card "商机" { stat "总金额" total_amount() }
+  }
+  section "新增客户"
+  form Customer
+  table Customer
+}
+
+view 商机 {
+  title "商机管道"
+  form Deal
+  table Deal
+  chart Deal amount
+}
+
+test "推进商机" {
+  let c = insert(Customer, {name: "甲公司"})
+  let d = insert(Deal, {title: "年度合同", customer_id: c.id, amount: 100})
+  advance(d)
+  assert(d.stage == "谈判")
+}

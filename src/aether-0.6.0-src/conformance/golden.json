@@ -1,0 +1,1925 @@
+[
+ {
+  "kind": "run",
+  "file": "conformance/programs/c01_core.ae",
+  "expect": {
+   "stdout": "9 5 14 3.5 1 2 3.0 2.5\n3.0 0.30000000000000004 7.0 0.3333333333333333\nx1 1x n=2.5 aaa\ntrue true true false true\nfalse dflt 5 e\ni=3 n=3 3\n3 2 3 3 [1, 2, 3] [2, 1, 3] 6 3 4\n{name: \"Ada\", tags: [\"x\", \"y\"], n: 1.5} Ada y [\"name\", \"tags\", \"n\"] [\"Ada\", [\"x\", \"y\"], 1.5]\n[0, 1, 2] [2, 3, 4] [0, 1, 4, 9] [2, 4]\n16 a-b [\"a\", \"b\"] AB cd\ntrue true 12 42 3.0 3 2 2.57 4.0\n{\"a\": [1, \"x\", true, null]} [1, 2.5] Int Text List\na\nb\nk 1\n[\"a\", \"b\", \"c\"] [{n: 1}, {n: 2}]\n",
+   "exit": 0,
+   "error": ""
+  }
+ },
+ {
+  "kind": "check",
+  "file": "conformance/programs/c01_core.ae",
+  "expect": [
+   {
+    "severity": "error",
+    "code": "E222",
+    "message": "operator '*' cannot apply to Text and Int",
+    "line": 5,
+    "col": 1
+   }
+  ]
+ },
+ {
+  "kind": "hash",
+  "file": "conformance/programs/c01_core.ae",
+  "expect": "2bc4c38f560f"
+ },
+ {
+  "kind": "fmt",
+  "file": "conformance/programs/c01_core.ae",
+  "expect": "let a = 7\nlet b = 2\nprint(a + b, a - b, a * b, a / b, a % b, -a % 3, 7.5 / 2.5, 10 / 4)\nprint(1 + 2.0, 0.1 + 0.2, 2 * 3.5, 1.0 / 3)\nprint(\"x\" + 1, 1 + \"x\", \"n=\" + 2.5, \"a\" * 3)\nprint(1 == 1.0, \"a\" < \"b\", [1, 2] == [1, 2], not true, nil == nil)\nprint(true and false, nil or \"dflt\", 0 or 5, \"\" or \"e\")\nvar i = 0\nlet xs = [3, 1, 2]\nwhile i < 3 { i += 1 }\nprint(\"i={i} n={1 + 2} {len(xs)}\")\n\nprint(xs[0], xs[-1], len(xs), xs.len(), sort(xs), reverse(xs), sum(xs), max(xs), min(4, 9))\nlet r = {name: \"Ada\", tags: [\"x\", \"y\"], n: 1.5}\nprint(r, r.name, r.tags[1], keys(r), values(r))\nprint(range(3), range(2, 5), map(range(4), fn(x) => x * x), filter([1, 2, 3, 4], fn(x) => x % 2 == 0))\nprint(reduce([1, 2, 3], fn(acc, x) => acc + x, 10), join([\"a\", \"b\"], \"-\"), split(\"a,b\", \",\"), upper(\"ab\"), lower(\"CD\"))\nprint(contains([1, 2], 2), contains(\"hello\", \"ell\"), str(12), int(\"42\"), float(3), abs(-3), floor(2.7), round(2.567, 2), sqrt(16))\nprint(json({a: [1, \"x\", true, nil]}), parse_json(\"[1, 2.5]\"), type_of(1), type_of(\"s\"), type_of([]))\nfor ch in \"ab\" { print(ch) }\nfor kv in {k: 1} { print(kv.key, kv.value) }\nprint(sort([\"b\", \"a\", \"c\"]), sort([{n: 2}, {n: 1}], fn(x) => x.n))\n"
+ },
+ {
+  "kind": "explain",
+  "file": "conformance/programs/c01_core.ae",
+  "expect": "# 程序「未命名」说明\n\n概要：0 种数据、0 个动作、0 个函数、0 个页面、0 个流程、0 个内嵌测试。\n\n"
+ },
+ {
+  "kind": "test",
+  "file": "conformance/programs/c01_core.ae",
+  "expect": []
+ },
+ {
+  "kind": "run",
+  "file": "conformance/programs/c02_functions.ae",
+  "expect": {
+   "stdout": "[1, 3, 5, 8]\nNode(Leaf, 1, Leaf)\n41\n3\npos non-pos\n[\"zero\", \"pair 1,2\", \"greeting\", \"big\", \"other\"]\n18\n[55, 89, 144]\n",
+   "exit": 0,
+   "error": ""
+  }
+ },
+ {
+  "kind": "check",
+  "file": "conformance/programs/c02_functions.ae",
+  "expect": [
+   {
+    "severity": "warning",
+    "code": "W300",
+    "message": "function 'insert' performs effects ['db'] but declares none",
+    "line": 2,
+    "col": 1,
+    "hint": "add `! db` after the signature"
+   }
+  ]
+ },
+ {
+  "kind": "hash",
+  "file": "conformance/programs/c02_functions.ae",
+  "expect": "ddaef39912e6"
+ },
+ {
+  "kind": "fmt",
+  "file": "conformance/programs/c02_functions.ae",
+  "expect": "type Tree = Leaf | Node(l: Tree, v: Int, r: Tree)\nfn insert(t: Tree, x: Int) -> Tree {\n  match t {\n    Leaf => Node(Leaf, x, Leaf),\n    Node(l, v, r) => if x < v { Node(insert(l, x), v, r) } else { Node(l, v, insert(r, x)) }\n  }\n}\nfn walk(t: Tree) -> List {\n  match t { Leaf => [], Node(l, v, r) => walk(l) + [v] + walk(r) }\n}\nlet t = reduce([5, 3, 8, 1], fn(acc, x) => insert(acc, x), Leaf)\nprint(walk(t))\nprint(Node(Leaf, 1, Leaf))\nfn compose(f: fn, g: fn) -> fn { fn(x) => f(g(x)) }\nlet inc = fn(x) => x + 1\nprint(compose(inc, fn(x) => x * 10)(4))\nfn counter() -> fn { var n = 0\n  fn() { n += 1; n } }\nlet c = counter()\nc(); c()\nprint(c())\nfn early(x: Int) -> Text { if x > 0 { return \"pos\" }\n  \"non-pos\" }\nprint(early(1), early(-1))\nfn desc(x) -> Text {\n  match x { 0 => \"zero\", [a, b] => \"pair {a},{b}\", \"hi\" => \"greeting\", n if n > 100 => \"big\", _ => \"other\" }\n}\nprint(map([0, [1, 2], \"hi\", 500, 3], desc))\nprint(range(5) |> map(fn(x) => x * 2) |> filter(fn(x) => x > 2) |> sum)\nlet jobs = map([10, 11, 12], fn(n) => spawn fib(n))\nfn fib(n: Int) -> Int { if n < 2 { n } else { fib(n - 1) + fib(n - 2) } }\nprint(await jobs)\n"
+ },
+ {
+  "kind": "explain",
+  "file": "conformance/programs/c02_functions.ae",
+  "expect": "# 程序「未命名」说明\n\n概要：0 种数据、0 个动作、7 个函数、0 个页面、0 个流程、0 个内嵌测试。\n\n\n## 函数\n- **insert**(t: Tree, x: Int) → Tree，无声明副作用（纯计算）。\n- **walk**(t: Tree) → List，无声明副作用（纯计算）。\n- **compose**(f: Fn, g: Fn) → Fn，无声明副作用（纯计算）。\n- **counter**() → Fn，无声明副作用（纯计算）。\n- **early**(x: Int) → Text，无声明副作用（纯计算）。\n- **desc**(x: Any) → Text，无声明副作用（纯计算）。\n- **fib**(n: Int) → Int，无声明副作用（纯计算）。\n"
+ },
+ {
+  "kind": "test",
+  "file": "conformance/programs/c02_functions.ae",
+  "expect": []
+ },
+ {
+  "kind": "run",
+  "file": "conformance/programs/c03_errors.ae",
+  "expect": {
+   "stdout": "E1 precondition failed in safe: requires b != 0\n2\nE2 postcondition failed in bad: ensures result > 0 (result = -1)\nE3 7\nE4 index 5 out of range\nE5 undefined name 'undefined_thing'\nE6 nope\nE7 custom\nE8 division by zero\nE9 cannot reassign immutable 'k' (use var)\nE10 record has no field 'b'\nE11 type error: cannot apply '-' to Text and Int\nE12 invariant of Acc violated: bal >= 0\n0\n[{id: 1, owner: \"y\", bal: 3}] 3\n0\n",
+   "exit": 1,
+   "error": "uncaught: final uncaught"
+  }
+ },
+ {
+  "kind": "check",
+  "file": "conformance/programs/c03_errors.ae",
+  "expect": [
+   {
+    "severity": "error",
+    "code": "E200",
+    "message": "undefined name 'undefined_thing'",
+    "line": 8,
+    "col": 1
+   },
+   {
+    "severity": "error",
+    "code": "E222",
+    "message": "operator '-' cannot apply to Text and Int",
+    "line": 15,
+    "col": 1
+   }
+  ]
+ },
+ {
+  "kind": "hash",
+  "file": "conformance/programs/c03_errors.ae",
+  "expect": "89a6e11d8048"
+ },
+ {
+  "kind": "fmt",
+  "file": "conformance/programs/c03_errors.ae",
+  "expect": "fn safe(a: Int, b: Int) -> Int requires b != 0 ensures result * b == a { a / b }\ntry { safe(1, 0) } catch e { print(\"E1\", e) }\nprint(safe(6, 3))\nfn bad(x: Int) -> Int ensures result > 0 { x }\ntry { bad(-1) } catch e { print(\"E2\", e) }\ntry { throw {code: 7} } catch e { print(\"E3\", e.code) }\ntry { let z = [1][5] } catch e { print(\"E4\", e) }\ntry { let q = undefined_thing } catch e { print(\"E5\", e) }\ntry { assert(1 == 2, \"nope\") } catch e { print(\"E6\", e) }\ntry { error(\"custom\") } catch e { print(\"E7\", e) }\ntry { 1 / 0 } catch e { print(\"E8\", e) }\ntry { let k = 1\n  k = 2 } catch e { print(\"E9\", e) }\ntry { {a: 1}.b } catch e { print(\"E10\", e) }\ntry { \"a\" - 1 } catch e { print(\"E11\", e) }\nentity Acc { owner: Text  bal: Int = 0\n  invariant bal >= 0 }\ntry { insert(Acc, {owner: \"x\", bal: -1}) } catch e { print(\"E12\", e) }\nprint(count(Acc))\nlet a = insert(Acc, {owner: \"y\", bal: 5})\na.bal = 3\nsave(Acc, a)\nprint(all(Acc), get(Acc, 1).bal)\nremove(Acc, a)\nprint(count(Acc))\nthrow \"final uncaught\"\n"
+ },
+ {
+  "kind": "explain",
+  "file": "conformance/programs/c03_errors.ae",
+  "expect": "# 程序「未命名」说明\n\n概要：1 种数据、0 个动作、2 个函数、0 个页面、0 个流程、0 个内嵌测试。\n\n## 数据（会自动建表并提供 API）\n- **Acc**：包含 owner（Text）、bal（Int，默认 0）。\n  - 不变式：任何时候都必须满足 `bal >= 0`，否则写入会被拒绝。\n\n## 函数\n- **safe**(a: Int, b: Int) → Int，无声明副作用（纯计算）。\n  - 调用前必须满足 `b != 0`\n  - 返回后保证 `result * b == a`（result 表示返回值）\n- **bad**(x: Int) → Int，无声明副作用（纯计算）。\n  - 返回后保证 `result > 0`（result 表示返回值）\n"
+ },
+ {
+  "kind": "run",
+  "file": "conformance/programs/c04_checker.ae",
+  "expect": {
+   "stdout": "",
+   "exit": 1,
+   "error": "R009: f expects 1 args, got 2"
+  }
+ },
+ {
+  "kind": "check",
+  "file": "conformance/programs/c04_checker.ae",
+  "expect": [
+   {
+    "severity": "error",
+    "code": "E200",
+    "message": "undefined name 'yy'",
+    "line": 2,
+    "col": 1
+   },
+   {
+    "severity": "warning",
+    "code": "W300",
+    "message": "function 'f' performs effects ['io'] but declares none",
+    "line": 1,
+    "col": 1,
+    "hint": "add `! io` after the signature"
+   },
+   {
+    "severity": "error",
+    "code": "E220",
+    "message": "'a' declared Int but value is Text",
+    "line": 3,
+    "col": 1
+   },
+   {
+    "severity": "error",
+    "code": "E240",
+    "message": "'f' expects 1 arguments, got 2",
+    "line": 4,
+    "col": 1
+   },
+   {
+    "severity": "error",
+    "code": "E250",
+    "message": "unknown constructor 'C' in pattern",
+    "line": 6,
+    "col": 1
+   },
+   {
+    "severity": "error",
+    "code": "E221",
+    "message": "function 'h' returns Int but declares Text",
+    "line": 7,
+    "col": 1
+   },
+   {
+    "severity": "error",
+    "code": "E220",
+    "message": "default of 'n' is Text, expected Int",
+    "line": 8,
+    "col": 1
+   },
+   {
+    "severity": "error",
+    "code": "E210",
+    "message": "duplicate field 'n' in entity E",
+    "line": 8,
+    "col": 1
+   },
+   {
+    "severity": "error",
+    "code": "E232",
+    "message": "view element 'list' references unknown entity 'Nope'",
+    "line": 10,
+    "col": 1
+   },
+   {
+    "severity": "error",
+    "code": "E233",
+    "message": "entity E has no field 'missing'",
+    "line": 11,
+    "col": 1,
+    "hint": "fields: n"
+   },
+   {
+    "severity": "error",
+    "code": "E231",
+    "message": "button targets unknown action 'nowhere'",
+    "line": 12,
+    "col": 1
+   },
+   {
+    "severity": "error",
+    "code": "E230",
+    "message": "unknown view element 'widget' (known: button, chart, form, list, section, stat, table, text, title)",
+    "line": 13,
+    "col": 1
+   },
+   {
+    "severity": "error",
+    "code": "E200",
+    "message": "undefined name 'zz'",
+    "line": 15,
+    "col": 1
+   },
+   {
+    "severity": "warning",
+    "code": "W310",
+    "message": "match may be non-exhaustive (add a `_ =>` arm)",
+    "line": 15,
+    "col": 1
+   },
+   {
+    "severity": "error",
+    "code": "E222",
+    "message": "operator '-' cannot apply to Text and List",
+    "line": 16,
+    "col": 1
+   },
+   {
+    "severity": "warning",
+    "code": "W320",
+    "message": "example should be a boolean expression, e.g. f(1) == 2",
+    "line": 17,
+    "col": 1
+   }
+  ]
+ },
+ {
+  "kind": "hash",
+  "file": "conformance/programs/c04_checker.ae",
+  "expect": "9a2092602198"
+ },
+ {
+  "kind": "fmt",
+  "file": "conformance/programs/c04_checker.ae",
+  "expect": "fn f(x: Int) -> Int { print(x)\n  x + yy }\nlet a: Int = \"s\"\nf(1, 2)\ntype S = A | B(x: Int)\nfn g(s: S) -> Int { match s { C => 1, _ => 2 } }\nfn h() -> Text { 42 }\nentity E { n: Int = \"x\"  n: Text }\nview V {\n  list Nope\n  table E missing\n  button \"b\" -> nowhere\n  widget E\n}\nfn m(x: Int) -> Int requires zz > 0 { match x { 1 => 1 } }\nlet w = \"a\" - [1]\nexample 1 + 1\n"
+ },
+ {
+  "kind": "explain",
+  "file": "conformance/programs/c04_checker.ae",
+  "expect": "# 程序「未命名」说明\n\n概要：1 种数据、0 个动作、4 个函数、1 个页面、0 个流程、1 个内嵌测试。\n\n## 数据（会自动建表并提供 API）\n- **E**：包含 n（Int，默认 \"x\"）、n（Text）。\n\n## 函数\n- **f**(x: Int) → Int，无声明副作用（纯计算）。\n- **g**(s: S) → Int，无声明副作用（纯计算）。\n- **h**() → Text，无声明副作用（纯计算）。\n- **m**(x: Int) → Int，无声明副作用（纯计算）。\n  - 调用前必须满足 `zz > 0`\n\n## 页面\n- **V**：列表 Nope；表格 E missing；按钮 \"b\" →nowhere；widget E。\n\n## 内嵌测试与示例（`aether test` 运行）\n- 示例：`1 + 1`\n"
+ },
+ {
+  "kind": "run",
+  "file": "conformance/programs/c05_syntax.ae",
+  "expect": {
+   "stdout": "",
+   "exit": 1,
+   "error": "E101: expected identifier but found '{'"
+  }
+ },
+ {
+  "kind": "check",
+  "file": "conformance/programs/c05_syntax.ae",
+  "expect": [
+   {
+    "severity": "error",
+    "code": "E101",
+    "message": "expected identifier but found '{'",
+    "line": 1,
+    "col": 12
+   }
+  ]
+ },
+ {
+  "kind": "hash",
+  "file": "conformance/programs/c05_syntax.ae",
+  "expect": "14abb616bca9"
+ },
+ {
+  "kind": "run",
+  "file": "examples/bank.ae",
+  "expect": {
+   "stdout": "",
+   "exit": 0,
+   "error": ""
+  }
+ },
+ {
+  "kind": "check",
+  "file": "examples/bank.ae",
+  "expect": []
+ },
+ {
+  "kind": "hash",
+  "file": "examples/bank.ae",
+  "expect": "3befa243bdcc"
+ },
+ {
+  "kind": "fmt",
+  "file": "examples/bank.ae",
+  "expect": "// 契约式编程示例：前置条件、后置条件、不变式、权限、流程与内嵌测试\nmodule 银行\n\nentity Account {\n  owner: Text\n  balance: Int = 0\n  invariant balance >= 0\n  invariant len(owner) > 0\n}\n\nfn apply_fee(amount: Int) -> Int\nrequires amount >= 0\nensures result <= amount, result >= 0\n{\n  if amount > 100 { amount - 1 } else { amount }\n}\n\naction deposit(a: Account)\nrequires a.balance < 1000000\nensures a.balance > 0\n{\n  a.balance += 100\n}\n\naction withdraw(a: Account) {\n  a.balance -= 50          // 余额不足时不变式会拒绝这次写入\n}\n\naction audit_reset() allow admin, auditor {\n  for a in all(Account) { a.balance = 0; save(Account, a) }\n}\n\nexample apply_fee(50) == 50\nexample apply_fee(200) == 199\n\ntest \"取款不能透支\" {\n  let a = insert(Account, {owner: \"Ada\"})\n  var blocked = false\n  try { a.balance = -10; save(Account, a) } catch e { blocked = true }\n  assert(blocked)\n}\n\ntest \"负数金额违反前置条件\" {\n  var ok = false\n  try { apply_fee(-1) } catch e { ok = true }\n  assert(ok)\n}\n\nflow 月结 {\n  step \"计息\" { for a in all(Account) { a.balance += a.balance / 100; save(Account, a) } }\n  step \"汇总\" { ctx.total = sum(map(all(Account), fn(a) => a.balance)) }\n  step \"报告\" { \"总余额 {ctx.total}\" }\n}\n\nview 账户 {\n  title \"Aether 银行\"\n  stat \"账户数\" count(Account)\n  stat \"总余额\" sum(map(all(Account), fn(a) => a.balance))\n  form Account\n  list Account owner\n  button \"审计清零\" -> audit_reset\n}\n"
+ },
+ {
+  "kind": "explain",
+  "file": "examples/bank.ae",
+  "expect": "# 程序「银行」说明\n\n概要：1 种数据、3 个动作、1 个函数、1 个页面、1 个流程、4 个内嵌测试。\n\n## 数据（会自动建表并提供 API）\n- **Account**：包含 owner（Text）、balance（Int，默认 0）。\n  - 不变式：任何时候都必须满足 `balance >= 0`，否则写入会被拒绝。\n  - 不变式：任何时候都必须满足 `len(owner) > 0`，否则写入会被拒绝。\n\n## 动作（用户可触发的操作）\n- **deposit**：参数 a（Account）；所有用户可执行。效果：把 a.balance 设为 a.balance + 100。\n  - 前置条件：`a.balance < 1000000`\n  - 后置保证：`a.balance > 0`\n- **withdraw**：参数 a（Account）；所有用户可执行。效果：把 a.balance 设为 a.balance - 50。\n- **audit_reset**：参数 无参数；仅限角色 admin / auditor可执行。效果：对 all(Account) 中的每一项执行操作。\n\n## 函数\n- **apply_fee**(amount: Int) → Int，无声明副作用（纯计算）。\n  - 调用前必须满足 `amount >= 0`\n  - 返回后保证 `result <= amount`（result 表示返回值）\n  - 返回后保证 `result >= 0`（result 表示返回值）\n\n## 页面\n- **账户**：标题 \"Aether 银行\"；统计 \"账户数\" count(Account)；统计 \"总余额\" sum(map(all(Account), fn(a) => …))；新增表单 Account；列表 Account owner；按钮 \"审计清零\" →audit_reset。\n\n## 流程（按顺序执行，任一步失败即停止并记录）\n- **月结**：计息 → 汇总 → 报告\n\n## 内嵌测试与示例（`aether test` 运行）\n- 测试「取款不能透支」\n- 测试「负数金额违反前置条件」\n- 示例：`apply_fee(50) == 50`\n- 示例：`apply_fee(200) == 199`\n"
+ },
+ {
+  "kind": "test",
+  "file": "examples/bank.ae",
+  "expect": [
+   [
+    "example: apply_fee(50) == 50",
+    true,
+    ""
+   ],
+   [
+    "example: apply_fee(200) == 199",
+    true,
+    ""
+   ],
+   [
+    "取款不能透支",
+    true,
+    ""
+   ],
+   [
+    "负数金额违反前置条件",
+    true,
+    ""
+   ]
+  ]
+ },
+ {
+  "kind": "run",
+  "file": "examples/blog.ae",
+  "expect": {
+   "stdout": "",
+   "exit": 0,
+   "error": ""
+  }
+ },
+ {
+  "kind": "check",
+  "file": "examples/blog.ae",
+  "expect": []
+ },
+ {
+  "kind": "hash",
+  "file": "examples/blog.ae",
+  "expect": "ed52ef3c1206"
+ },
+ {
+  "kind": "fmt",
+  "file": "examples/blog.ae",
+  "expect": "module 博客\n\nentity Post {\n  title: Text\n  body: Text\n  author: Text = \"匿名\"\n  likes: Int = 0\n  published: Bool = false\n}\n\nentity Comment {\n  post_id: Int\n  text: Text\n}\n\naction like(p: Post) { p.likes += 1 }\naction publish(p: Post) { p.published = true }\n\nfn popular() -> List ! db {\n  sort(where(Post, fn(p) => p.likes > 0), fn(p) => 0 - p.likes)\n}\n\nview 文章 {\n  title \"Aether 博客\"\n  text \"由一份 .ae 文件自动生成的博客：数据表、REST API 和界面都无需手写。\"\n  stat \"文章\" count(Post)\n  stat \"评论\" count(Comment)\n  form Post\n  list Post title\n}\n\nview 热度 {\n  title \"点赞排行\"\n  chart Post likes\n}\n\nview 评论 {\n  form Comment\n  table Comment\n}\n"
+ },
+ {
+  "kind": "explain",
+  "file": "examples/blog.ae",
+  "expect": "# 程序「博客」说明\n\n概要：2 种数据、2 个动作、1 个函数、3 个页面、0 个流程、0 个内嵌测试。\n\n## 数据（会自动建表并提供 API）\n- **Post**：包含 title（Text）、body（Text）、author（Text，默认 \"匿名\"）、likes（Int，默认 0）、published（Bool，默认 false）。\n- **Comment**：包含 post_id（Int）、text（Text）。\n\n## 动作（用户可触发的操作）\n- **like**：参数 p（Post）；所有用户可执行。效果：把 p.likes 设为 p.likes + 1。\n- **publish**：参数 p（Post）；所有用户可执行。效果：把 p.published 设为 true。\n\n## 函数\n- **popular**() → List，副作用：db。\n\n## 页面\n- **文章**：标题 \"Aether 博客\"；文字 \"由一份 .ae 文件自动生成的博客：数据表、REST API 和界面都无需手写。\"；统计 \"文章\" count(Post)；统计 \"评论\" count(Comment)；新增表单 Post；列表 Post title。\n- **热度**：标题 \"点赞排行\"；图表 Post likes。\n- **评论**：新增表单 Comment；表格 Comment。\n"
+ },
+ {
+  "kind": "test",
+  "file": "examples/blog.ae",
+  "expect": []
+ },
+ {
+  "kind": "run",
+  "file": "examples/counter.ae",
+  "expect": {
+   "stdout": "",
+   "exit": 0,
+   "error": ""
+  }
+ },
+ {
+  "kind": "check",
+  "file": "examples/counter.ae",
+  "expect": []
+ },
+ {
+  "kind": "hash",
+  "file": "examples/counter.ae",
+  "expect": "92e0ed102e5f"
+ },
+ {
+  "kind": "fmt",
+  "file": "examples/counter.ae",
+  "expect": "module 计数器\n\nentity Counter {\n  name: Text\n  value: Int = 0\n}\n\naction inc(c: Counter) { c.value += 1 }\naction dec(c: Counter) { c.value -= 1 }\naction reset_all() {\n  for c in all(Counter) { c.value = 0; save(Counter, c) }\n}\n\nview 计数 {\n  title \"计数器\"\n  stat \"计数器数量\" count(Counter)\n  stat \"总和\" sum(map(all(Counter), fn(c) => c.value))\n  form Counter\n  list Counter\n  button \"全部归零\" -> reset_all\n}\n"
+ },
+ {
+  "kind": "explain",
+  "file": "examples/counter.ae",
+  "expect": "# 程序「计数器」说明\n\n概要：1 种数据、3 个动作、0 个函数、1 个页面、0 个流程、0 个内嵌测试。\n\n## 数据（会自动建表并提供 API）\n- **Counter**：包含 name（Text）、value（Int，默认 0）。\n\n## 动作（用户可触发的操作）\n- **inc**：参数 c（Counter）；所有用户可执行。效果：把 c.value 设为 c.value + 1。\n- **dec**：参数 c（Counter）；所有用户可执行。效果：把 c.value 设为 c.value - 1。\n- **reset_all**：参数 无参数；所有用户可执行。效果：对 all(Counter) 中的每一项执行操作。\n\n## 页面\n- **计数**：标题 \"计数器\"；统计 \"计数器数量\" count(Counter)；统计 \"总和\" sum(map(all(Counter), fn(c) => …))；新增表单 Counter；列表 Counter；按钮 \"全部归零\" →reset_all。\n"
+ },
+ {
+  "kind": "test",
+  "file": "examples/counter.ae",
+  "expect": []
+ },
+ {
+  "kind": "run",
+  "file": "examples/language_tour.ae",
+  "expect": {
+   "stdout": "面积: [3.14159, 6.0, 0.0]\n泛型: hello 42\n闭包计数: 3\n管道: 120\n分类: [\"零\", \"负数\", \"偶数\", \"奇数\"]\n捕获异常: 除数不能为 0\n并发结果: [6765, 10946, 17711]\n记录: Ada 会 2 门语言\n",
+   "exit": 0,
+   "error": ""
+  }
+ },
+ {
+  "kind": "check",
+  "file": "examples/language_tour.ae",
+  "expect": []
+ },
+ {
+  "kind": "hash",
+  "file": "examples/language_tour.ae",
+  "expect": "031545c69dba"
+ },
+ {
+  "kind": "fmt",
+  "file": "examples/language_tour.ae",
+  "expect": "// 语言特性巡礼：类型、泛型、闭包、代数数据类型、模式匹配、管道、效果、异常、并发\nmodule tour\n\ntype Shape = Circle(r: Float) | Rect(w: Float, h: Float) | Dot\n\nfn area(s: Shape) -> Float {\n  match s {\n    Circle(r) => 3.14159 * r * r,\n    Rect(w, h) => w * h,\n    Dot => 0.0\n  }\n}\n\nfn identity<T>(x: T) -> T { x }\n\nfn make_counter() -> fn {\n  var n = 0\n  fn() { n += 1; n }\n}\n\nfn fib(n: Int) -> Int {\n  if n < 2 { n } else { fib(n - 1) + fib(n - 2) }\n}\n\nfn safe_div(a: Int, b: Int) -> Int {\n  if b == 0 { throw \"除数不能为 0\" }\n  a / b\n}\n\nfn classify(n: Int) -> Text {\n  match n {\n    0 => \"零\",\n    x if x < 0 => \"负数\",\n    x if x % 2 == 0 => \"偶数\",\n    _ => \"奇数\"\n  }\n}\n\nlet shapes = [Circle(1.0), Rect(2.0, 3.0), Dot]\nprint(\"面积:\", shapes |> map(area))\nprint(\"泛型:\", identity(\"hello\"), identity(42))\n\nlet c = make_counter()\nc(); c()\nprint(\"闭包计数:\", c())\n\nprint(\"管道:\", range(10) |> filter(fn(x) => x % 2 == 0) |> map(fn(x) => x * x) |> sum)\nprint(\"分类:\", map([0, -3, 4, 7], classify))\n\ntry { safe_div(1, 0) } catch e { print(\"捕获异常:\", e) }\n\nlet jobs = map([20, 21, 22], fn(n) => spawn fib(n))\nprint(\"并发结果:\", await jobs)\n\nlet user = {name: \"Ada\", langs: [\"Aether\", \"Python\"]}\nprint(\"记录: {user.name} 会 {len(user.langs)} 门语言\")\n"
+ },
+ {
+  "kind": "explain",
+  "file": "examples/language_tour.ae",
+  "expect": "# 程序「tour」说明\n\n概要：0 种数据、0 个动作、6 个函数、0 个页面、0 个流程、0 个内嵌测试。\n\n\n## 函数\n- **area**(s: Shape) → Float，无声明副作用（纯计算）。\n- **identity**(x: T) → T，无声明副作用（纯计算）。\n- **make_counter**() → Fn，无声明副作用（纯计算）。\n- **fib**(n: Int) → Int，无声明副作用（纯计算）。\n- **safe_div**(a: Int, b: Int) → Int，无声明副作用（纯计算）。\n- **classify**(n: Int) → Text，无声明副作用（纯计算）。\n"
+ },
+ {
+  "kind": "test",
+  "file": "examples/language_tour.ae",
+  "expect": []
+ },
+ {
+  "kind": "run",
+  "file": "examples/todo.ae",
+  "expect": {
+   "stdout": "",
+   "exit": 0,
+   "error": ""
+  }
+ },
+ {
+  "kind": "check",
+  "file": "examples/todo.ae",
+  "expect": []
+ },
+ {
+  "kind": "hash",
+  "file": "examples/todo.ae",
+  "expect": "a87c8d042c9a"
+ },
+ {
+  "kind": "fmt",
+  "file": "examples/todo.ae",
+  "expect": "// 待办应用：一份描述 = 数据库 + API + 界面\nmodule 待办清单\n\nentity Todo {\n  title: Text\n  done: Bool = false\n  priority: Int = 1\n  invariant priority >= 1 and priority <= 5\n  invariant len(title) > 0\n}\n\naction toggle(t: Todo) {\n  t.done = not t.done\n}\n\naction bump(t: Todo)\nrequires t.priority < 5\n{\n  t.priority += 1\n}\n\naction clear_done() allow admin {\n  for t in where(Todo, fn(x) => x.done) { remove(Todo, t) }\n}\n\nfn progress() -> Text ! db {\n  let n = count(Todo)\n  if n == 0 { \"还没有任务\" } else { \"{len(where(Todo, fn(x) => x.done))} / {n} 已完成\" }\n}\n\nview 首页 {\n  title \"我的待办\"\n  stat \"进度\" progress()\n  form Todo\n  list Todo title\n  button \"清除已完成\" -> clear_done\n}\n\nview 表格 {\n  title \"全部任务\"\n  table Todo\n}\n\nfn label(p: Int) -> Text\nrequires p >= 1\nensures len(result) > 0\n{\n  match p { 1 => \"低\", 2 => \"中\", _ => \"高\" }\n}\n\nexample label(1) == \"低\"\nexample label(5) == \"高\"\n\ntest \"新建任务默认未完成\" {\n  let t = insert(Todo, {title: \"测试\"})\n  assert(t.done == false)\n  assert(t.priority == 1)\n}\n\ntest \"优先级不能超过 5\" {\n  var failed = false\n  try { insert(Todo, {title: \"x\", priority: 9}) } catch e { failed = true }\n  assert(failed, \"invariant should reject priority 9\")\n}\n\nflow 每日整理 {\n  step \"统计\" { ctx.total = count(Todo) }\n  step \"清理已完成\" { for t in where(Todo, fn(x) => x.done) { remove(Todo, t) } }\n  step \"报告\" { \"清理后剩余 {count(Todo)} / 原有 {ctx.total}\" }\n}\n"
+ },
+ {
+  "kind": "explain",
+  "file": "examples/todo.ae",
+  "expect": "# 程序「待办清单」说明\n\n概要：1 种数据、3 个动作、2 个函数、2 个页面、1 个流程、4 个内嵌测试。\n\n## 数据（会自动建表并提供 API）\n- **Todo**：包含 title（Text）、done（Bool，默认 false）、priority（Int，默认 1）。\n  - 不变式：任何时候都必须满足 `priority >= 1 and priority <= 5`，否则写入会被拒绝。\n  - 不变式：任何时候都必须满足 `len(title) > 0`，否则写入会被拒绝。\n\n## 动作（用户可触发的操作）\n- **toggle**：参数 t（Todo）；所有用户可执行。效果：把 t.done 设为 not t.done。\n- **bump**：参数 t（Todo）；所有用户可执行。效果：把 t.priority 设为 t.priority + 1。\n  - 前置条件：`t.priority < 5`\n- **clear_done**：参数 无参数；仅限角色 admin可执行。效果：对 where(Todo, fn(x) => …) 中的每一项执行操作。\n\n## 函数\n- **progress**() → Text，副作用：db。\n- **label**(p: Int) → Text，无声明副作用（纯计算）。\n  - 调用前必须满足 `p >= 1`\n  - 返回后保证 `len(result) > 0`（result 表示返回值）\n\n## 页面\n- **首页**：标题 \"我的待办\"；统计 \"进度\" progress()；新增表单 Todo；列表 Todo title；按钮 \"清除已完成\" →clear_done。\n- **表格**：标题 \"全部任务\"；表格 Todo。\n\n## 流程（按顺序执行，任一步失败即停止并记录）\n- **每日整理**：统计 → 清理已完成 → 报告\n\n## 内嵌测试与示例（`aether test` 运行）\n- 测试「新建任务默认未完成」\n- 测试「优先级不能超过 5」\n- 示例：`label(1) == \"低\"`\n- 示例：`label(5) == \"高\"`\n"
+ },
+ {
+  "kind": "test",
+  "file": "examples/todo.ae",
+  "expect": [
+   [
+    "example: label(1) == \"低\"",
+    true,
+    ""
+   ],
+   [
+    "example: label(5) == \"高\"",
+    true,
+    ""
+   ],
+   [
+    "新建任务默认未完成",
+    true,
+    ""
+   ],
+   [
+    "优先级不能超过 5",
+    true,
+    ""
+   ]
+  ]
+ },
+ {
+  "kind": "api",
+  "file": "examples/todo.ae",
+  "steps": [
+   [
+    "GET",
+    "/api/_meta",
+    null,
+    "user"
+   ],
+   [
+    "POST",
+    "/api/Todo",
+    {
+     "title": "买菜"
+    },
+    "user"
+   ],
+   [
+    "POST",
+    "/api/Todo",
+    {
+     "title": "写代码",
+     "priority": 3,
+     "done": true
+    },
+    "user"
+   ],
+   [
+    "POST",
+    "/api/Todo",
+    {
+     "title": ""
+    },
+    "user"
+   ],
+   [
+    "POST",
+    "/api/Todo",
+    {
+     "title": "x",
+     "priority": 9
+    },
+    "user"
+   ],
+   [
+    "POST",
+    "/api/action/toggle",
+    {
+     "t": 1
+    },
+    "user"
+   ],
+   [
+    "POST",
+    "/api/action/bump",
+    {
+     "t": 2
+    },
+    "user"
+   ],
+   [
+    "POST",
+    "/api/action/bump",
+    {
+     "t": 2
+    },
+    "user"
+   ],
+   [
+    "POST",
+    "/api/action/bump",
+    {
+     "t": 2
+    },
+    "user"
+   ],
+   [
+    "GET",
+    "/api/Todo",
+    null,
+    "user"
+   ],
+   [
+    "POST",
+    "/api/action/clear_done",
+    {},
+    "user"
+   ],
+   [
+    "POST",
+    "/api/action/clear_done",
+    {},
+    "admin"
+   ],
+   [
+    "GET",
+    "/api/_meta",
+    null,
+    "user"
+   ],
+   [
+    "PUT",
+    "/api/Todo/2",
+    {
+     "title": "改名"
+    },
+    "user"
+   ],
+   [
+    "GET",
+    "/api/Todo/2",
+    null,
+    "user"
+   ],
+   [
+    "DELETE",
+    "/api/Todo/2",
+    null,
+    "user"
+   ],
+   [
+    "GET",
+    "/api/Todo/2",
+    null,
+    "user"
+   ],
+   [
+    "POST",
+    "/api/flow/每日整理",
+    {},
+    "user"
+   ],
+   [
+    "GET",
+    "/api/_openapi",
+    null,
+    "user"
+   ],
+   [
+    "GET",
+    "/api/nothing",
+    null,
+    "user"
+   ]
+  ],
+  "expect": [
+   [
+    200,
+    {
+     "module": "待办清单",
+     "entities": [
+      {
+       "name": "Todo",
+       "fields": [
+        {
+         "name": "title",
+         "type": "Text"
+        },
+        {
+         "name": "done",
+         "type": "Bool"
+        },
+        {
+         "name": "priority",
+         "type": "Int"
+        }
+       ],
+       "row_actions": [
+        "toggle",
+        "bump"
+       ]
+      }
+     ],
+     "flows": [
+      "每日整理"
+     ],
+     "actions": [
+      {
+       "name": "toggle",
+       "allow": [],
+       "params": [
+        {
+         "name": "t",
+         "type": "Todo"
+        }
+       ]
+      },
+      {
+       "name": "bump",
+       "allow": [],
+       "params": [
+        {
+         "name": "t",
+         "type": "Todo"
+        }
+       ]
+      },
+      {
+       "name": "clear_done",
+       "allow": [
+        "admin"
+       ],
+       "params": []
+      }
+     ],
+     "views": [
+      {
+       "name": "首页",
+       "items": [
+        {
+         "kind": "title",
+         "text": "我的待办"
+        },
+        {
+         "kind": "stat",
+         "label": "进度",
+         "value": "还没有任务"
+        },
+        {
+         "kind": "form",
+         "entity": "Todo"
+        },
+        {
+         "kind": "list",
+         "entity": "Todo",
+         "label_field": "title"
+        },
+        {
+         "kind": "button",
+         "label": "清除已完成",
+         "action": "clear_done"
+        }
+       ]
+      },
+      {
+       "name": "表格",
+       "items": [
+        {
+         "kind": "title",
+         "text": "全部任务"
+        },
+        {
+         "kind": "table",
+         "entity": "Todo"
+        }
+       ]
+      }
+     ]
+    }
+   ],
+   [
+    201,
+    {
+     "id": 1,
+     "title": "买菜",
+     "done": false,
+     "priority": 1
+    }
+   ],
+   [
+    201,
+    {
+     "id": 2,
+     "title": "写代码",
+     "done": true,
+     "priority": 3
+    }
+   ],
+   [
+    400,
+    {
+     "error": "invariant of Todo violated: len(title) > 0"
+    }
+   ],
+   [
+    400,
+    {
+     "error": "invariant of Todo violated: priority >= 1 and priority <= 5"
+    }
+   ],
+   [
+    200,
+    {
+     "result": null,
+     "output": []
+    }
+   ],
+   [
+    200,
+    {
+     "result": null,
+     "output": []
+    }
+   ],
+   [
+    200,
+    {
+     "result": null,
+     "output": []
+    }
+   ],
+   [
+    400,
+    {
+     "error": "precondition failed in bump: requires t.priority < 5"
+    }
+   ],
+   [
+    200,
+    [
+     {
+      "id": 1,
+      "title": "买菜",
+      "done": true,
+      "priority": 1
+     },
+     {
+      "id": 2,
+      "title": "写代码",
+      "done": true,
+      "priority": 5
+     }
+    ]
+   ],
+   [
+    403,
+    {
+     "error": "action 'clear_done' requires role admin, you are 'user'"
+    }
+   ],
+   [
+    200,
+    {
+     "result": null,
+     "output": []
+    }
+   ],
+   [
+    200,
+    {
+     "module": "待办清单",
+     "entities": [
+      {
+       "name": "Todo",
+       "fields": [
+        {
+         "name": "title",
+         "type": "Text"
+        },
+        {
+         "name": "done",
+         "type": "Bool"
+        },
+        {
+         "name": "priority",
+         "type": "Int"
+        }
+       ],
+       "row_actions": [
+        "toggle",
+        "bump"
+       ]
+      }
+     ],
+     "flows": [
+      "每日整理"
+     ],
+     "actions": [
+      {
+       "name": "toggle",
+       "allow": [],
+       "params": [
+        {
+         "name": "t",
+         "type": "Todo"
+        }
+       ]
+      },
+      {
+       "name": "bump",
+       "allow": [],
+       "params": [
+        {
+         "name": "t",
+         "type": "Todo"
+        }
+       ]
+      },
+      {
+       "name": "clear_done",
+       "allow": [
+        "admin"
+       ],
+       "params": []
+      }
+     ],
+     "views": [
+      {
+       "name": "首页",
+       "items": [
+        {
+         "kind": "title",
+         "text": "我的待办"
+        },
+        {
+         "kind": "stat",
+         "label": "进度",
+         "value": "还没有任务"
+        },
+        {
+         "kind": "form",
+         "entity": "Todo"
+        },
+        {
+         "kind": "list",
+         "entity": "Todo",
+         "label_field": "title"
+        },
+        {
+         "kind": "button",
+         "label": "清除已完成",
+         "action": "clear_done"
+        }
+       ]
+      },
+      {
+       "name": "表格",
+       "items": [
+        {
+         "kind": "title",
+         "text": "全部任务"
+        },
+        {
+         "kind": "table",
+         "entity": "Todo"
+        }
+       ]
+      }
+     ]
+    }
+   ],
+   [
+    400,
+    {
+     "error": "type error: cannot apply '>=' to Nil and Int"
+    }
+   ],
+   [
+    404,
+    {
+     "error": "not found"
+    }
+   ],
+   [
+    200,
+    {
+     "deleted": 2
+    }
+   ],
+   [
+    404,
+    {
+     "error": "not found"
+    }
+   ],
+   [
+    200,
+    {
+     "flow": "每日整理",
+     "steps": [
+      {
+       "step": "统计",
+       "ok": true,
+       "value": "nil"
+      },
+      {
+       "step": "清理已完成",
+       "ok": true,
+       "value": "nil"
+      },
+      {
+       "step": "报告",
+       "ok": true,
+       "value": "清理后剩余 0 / 原有 0"
+      }
+     ],
+     "ok": true,
+     "ctx": {
+      "total": 0
+     }
+    }
+   ],
+   [
+    200,
+    {
+     "openapi": "3.0.0",
+     "info": {
+      "title": "待办清单",
+      "version": "1"
+     },
+     "paths": {
+      "/api/Todo": {
+       "get": {
+        "summary": "list Todo"
+       },
+       "post": {
+        "summary": "create Todo"
+       }
+      },
+      "/api/Todo/{id}": {
+       "get": {},
+       "put": {},
+       "delete": {}
+      },
+      "/api/action/toggle": {
+       "post": {
+        "summary": "run action toggle"
+       }
+      },
+      "/api/action/bump": {
+       "post": {
+        "summary": "run action bump"
+       }
+      },
+      "/api/action/clear_done": {
+       "post": {
+        "summary": "run action clear_done"
+       }
+      }
+     }
+    }
+   ],
+   [
+    404,
+    {
+     "error": "no route GET /api/nothing"
+    }
+   ]
+  ]
+ },
+ {
+  "kind": "api",
+  "file": "examples/bank.ae",
+  "steps": [
+   [
+    "POST",
+    "/api/Account",
+    {
+     "owner": "Ada"
+    },
+    "user"
+   ],
+   [
+    "POST",
+    "/api/action/deposit",
+    {
+     "a": 1
+    },
+    "user"
+   ],
+   [
+    "POST",
+    "/api/action/withdraw",
+    {
+     "a": 1
+    },
+    "user"
+   ],
+   [
+    "POST",
+    "/api/action/withdraw",
+    {
+     "a": 1
+    },
+    "user"
+   ],
+   [
+    "POST",
+    "/api/action/withdraw",
+    {
+     "a": 1
+    },
+    "user"
+   ],
+   [
+    "GET",
+    "/api/Account/1",
+    null,
+    "user"
+   ],
+   [
+    "POST",
+    "/api/action/audit_reset",
+    {},
+    "guest"
+   ],
+   [
+    "POST",
+    "/api/action/audit_reset",
+    {},
+    "auditor"
+   ],
+   [
+    "POST",
+    "/api/flow/月结",
+    {},
+    "user"
+   ],
+   [
+    "GET",
+    "/api/_meta",
+    null,
+    "user"
+   ]
+  ],
+  "expect": [
+   [
+    201,
+    {
+     "id": 1,
+     "owner": "Ada",
+     "balance": 0
+    }
+   ],
+   [
+    200,
+    {
+     "result": null,
+     "output": []
+    }
+   ],
+   [
+    200,
+    {
+     "result": null,
+     "output": []
+    }
+   ],
+   [
+    200,
+    {
+     "result": null,
+     "output": []
+    }
+   ],
+   [
+    400,
+    {
+     "error": "invariant of Account violated: balance >= 0"
+    }
+   ],
+   [
+    200,
+    {
+     "id": 1,
+     "owner": "Ada",
+     "balance": 0
+    }
+   ],
+   [
+    403,
+    {
+     "error": "action 'audit_reset' requires role admin / auditor, you are 'guest'"
+    }
+   ],
+   [
+    200,
+    {
+     "result": null,
+     "output": []
+    }
+   ],
+   [
+    200,
+    {
+     "flow": "月结",
+     "steps": [
+      {
+       "step": "计息",
+       "ok": true,
+       "value": "nil"
+      },
+      {
+       "step": "汇总",
+       "ok": true,
+       "value": "nil"
+      },
+      {
+       "step": "报告",
+       "ok": true,
+       "value": "总余额 0"
+      }
+     ],
+     "ok": true,
+     "ctx": {
+      "total": 0
+     }
+    }
+   ],
+   [
+    200,
+    {
+     "module": "银行",
+     "entities": [
+      {
+       "name": "Account",
+       "fields": [
+        {
+         "name": "owner",
+         "type": "Text"
+        },
+        {
+         "name": "balance",
+         "type": "Int"
+        }
+       ],
+       "row_actions": [
+        "deposit",
+        "withdraw"
+       ]
+      }
+     ],
+     "flows": [
+      "月结"
+     ],
+     "actions": [
+      {
+       "name": "deposit",
+       "allow": [],
+       "params": [
+        {
+         "name": "a",
+         "type": "Account"
+        }
+       ]
+      },
+      {
+       "name": "withdraw",
+       "allow": [],
+       "params": [
+        {
+         "name": "a",
+         "type": "Account"
+        }
+       ]
+      },
+      {
+       "name": "audit_reset",
+       "allow": [
+        "admin",
+        "auditor"
+       ],
+       "params": []
+      }
+     ],
+     "views": [
+      {
+       "name": "账户",
+       "items": [
+        {
+         "kind": "title",
+         "text": "Aether 银行"
+        },
+        {
+         "kind": "stat",
+         "label": "账户数",
+         "value": "1"
+        },
+        {
+         "kind": "stat",
+         "label": "总余额",
+         "value": "0"
+        },
+        {
+         "kind": "form",
+         "entity": "Account"
+        },
+        {
+         "kind": "list",
+         "entity": "Account",
+         "label_field": "owner"
+        },
+        {
+         "kind": "button",
+         "label": "审计清零",
+         "action": "audit_reset"
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  ]
+ },
+ {
+  "kind": "api",
+  "file": "examples/counter.ae",
+  "steps": [
+   [
+    "POST",
+    "/api/Counter",
+    {
+     "name": "a"
+    },
+    "user"
+   ],
+   [
+    "POST",
+    "/api/Counter",
+    {
+     "name": "b",
+     "value": "5"
+    },
+    "user"
+   ],
+   [
+    "POST",
+    "/api/action/inc",
+    {
+     "c": 1
+    },
+    "user"
+   ],
+   [
+    "POST",
+    "/api/action/dec",
+    {
+     "c": 2
+    },
+    "user"
+   ],
+   [
+    "GET",
+    "/api/_meta",
+    null,
+    "user"
+   ],
+   [
+    "POST",
+    "/api/action/reset_all",
+    {},
+    "user"
+   ],
+   [
+    "GET",
+    "/api/Counter",
+    null,
+    "user"
+   ]
+  ],
+  "expect": [
+   [
+    201,
+    {
+     "id": 1,
+     "name": "a",
+     "value": 0
+    }
+   ],
+   [
+    201,
+    {
+     "id": 2,
+     "name": "b",
+     "value": 5
+    }
+   ],
+   [
+    200,
+    {
+     "result": null,
+     "output": []
+    }
+   ],
+   [
+    200,
+    {
+     "result": null,
+     "output": []
+    }
+   ],
+   [
+    200,
+    {
+     "module": "计数器",
+     "entities": [
+      {
+       "name": "Counter",
+       "fields": [
+        {
+         "name": "name",
+         "type": "Text"
+        },
+        {
+         "name": "value",
+         "type": "Int"
+        }
+       ],
+       "row_actions": [
+        "inc",
+        "dec"
+       ]
+      }
+     ],
+     "flows": [],
+     "actions": [
+      {
+       "name": "inc",
+       "allow": [],
+       "params": [
+        {
+         "name": "c",
+         "type": "Counter"
+        }
+       ]
+      },
+      {
+       "name": "dec",
+       "allow": [],
+       "params": [
+        {
+         "name": "c",
+         "type": "Counter"
+        }
+       ]
+      },
+      {
+       "name": "reset_all",
+       "allow": [],
+       "params": []
+      }
+     ],
+     "views": [
+      {
+       "name": "计数",
+       "items": [
+        {
+         "kind": "title",
+         "text": "计数器"
+        },
+        {
+         "kind": "stat",
+         "label": "计数器数量",
+         "value": "2"
+        },
+        {
+         "kind": "stat",
+         "label": "总和",
+         "value": "5"
+        },
+        {
+         "kind": "form",
+         "entity": "Counter"
+        },
+        {
+         "kind": "list",
+         "entity": "Counter"
+        },
+        {
+         "kind": "button",
+         "label": "全部归零",
+         "action": "reset_all"
+        }
+       ]
+      }
+     ]
+    }
+   ],
+   [
+    200,
+    {
+     "result": null,
+     "output": []
+    }
+   ],
+   [
+    200,
+    [
+     {
+      "id": 1,
+      "name": "a",
+      "value": 0
+     },
+     {
+      "id": 2,
+      "name": "b",
+      "value": 0
+     }
+    ]
+   ]
+  ]
+ },
+ {
+  "kind": "api",
+  "file": "examples/blog.ae",
+  "steps": [
+   [
+    "POST",
+    "/api/Post",
+    {
+     "title": "A",
+     "body": "b",
+     "likes": 2
+    },
+    "user"
+   ],
+   [
+    "POST",
+    "/api/Post",
+    {
+     "title": "B",
+     "body": "c"
+    },
+    "user"
+   ],
+   [
+    "POST",
+    "/api/action/like",
+    {
+     "p": 2
+    },
+    "user"
+   ],
+   [
+    "POST",
+    "/api/action/publish",
+    {
+     "p": 1
+    },
+    "user"
+   ],
+   [
+    "GET",
+    "/api/_meta",
+    null,
+    "user"
+   ]
+  ],
+  "expect": [
+   [
+    201,
+    {
+     "id": 1,
+     "title": "A",
+     "body": "b",
+     "author": "匿名",
+     "likes": 2,
+     "published": false
+    }
+   ],
+   [
+    201,
+    {
+     "id": 2,
+     "title": "B",
+     "body": "c",
+     "author": "匿名",
+     "likes": 0,
+     "published": false
+    }
+   ],
+   [
+    200,
+    {
+     "result": null,
+     "output": []
+    }
+   ],
+   [
+    200,
+    {
+     "result": null,
+     "output": []
+    }
+   ],
+   [
+    200,
+    {
+     "module": "博客",
+     "entities": [
+      {
+       "name": "Post",
+       "fields": [
+        {
+         "name": "title",
+         "type": "Text"
+        },
+        {
+         "name": "body",
+         "type": "Text"
+        },
+        {
+         "name": "author",
+         "type": "Text"
+        },
+        {
+         "name": "likes",
+         "type": "Int"
+        },
+        {
+         "name": "published",
+         "type": "Bool"
+        }
+       ],
+       "row_actions": [
+        "like",
+        "publish"
+       ]
+      },
+      {
+       "name": "Comment",
+       "fields": [
+        {
+         "name": "post_id",
+         "type": "Int"
+        },
+        {
+         "name": "text",
+         "type": "Text"
+        }
+       ],
+       "row_actions": []
+      }
+     ],
+     "flows": [],
+     "actions": [
+      {
+       "name": "like",
+       "allow": [],
+       "params": [
+        {
+         "name": "p",
+         "type": "Post"
+        }
+       ]
+      },
+      {
+       "name": "publish",
+       "allow": [],
+       "params": [
+        {
+         "name": "p",
+         "type": "Post"
+        }
+       ]
+      }
+     ],
+     "views": [
+      {
+       "name": "文章",
+       "items": [
+        {
+         "kind": "title",
+         "text": "Aether 博客"
+        },
+        {
+         "kind": "text",
+         "text": "由一份 .ae 文件自动生成的博客：数据表、REST API 和界面都无需手写。"
+        },
+        {
+         "kind": "stat",
+         "label": "文章",
+         "value": "2"
+        },
+        {
+         "kind": "stat",
+         "label": "评论",
+         "value": "0"
+        },
+        {
+         "kind": "form",
+         "entity": "Post"
+        },
+        {
+         "kind": "list",
+         "entity": "Post",
+         "label_field": "title"
+        }
+       ]
+      },
+      {
+       "name": "热度",
+       "items": [
+        {
+         "kind": "title",
+         "text": "点赞排行"
+        },
+        {
+         "kind": "chart",
+         "entity": "Post",
+         "field": "likes"
+        }
+       ]
+      },
+      {
+       "name": "评论",
+       "items": [
+        {
+         "kind": "form",
+         "entity": "Comment"
+        },
+        {
+         "kind": "table",
+         "entity": "Comment"
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  ]
+ },
+ {
+  "kind": "ops",
+  "file": "examples/todo.ae",
+  "ops": [
+   {
+    "op": "add_field",
+    "entity": "Todo",
+    "field": "due",
+    "type": "Text"
+   }
+  ],
+  "expect": {
+   "source": "// 待办应用：一份描述 = 数据库 + API + 界面\nmodule 待办清单\n\nentity Todo {\n  title: Text\n  done: Bool = false\n  priority: Int = 1\n  invariant priority >= 1 and priority <= 5\n  invariant len(title) > 0\n  due: Text\n}\n\naction toggle(t: Todo) {\n  t.done = not t.done\n}\n\naction bump(t: Todo)\n  requires t.priority < 5\n{\n  t.priority += 1\n}\n\naction clear_done() allow admin {\n  for t in where(Todo, fn(x) => x.done) { remove(Todo, t) }\n}\n\nfn progress() -> Text ! db {\n  let n = count(Todo)\n  if n == 0 { \"还没有任务\" } else { \"{len(where(Todo, fn(x) => x.done))} / {n} 已完成\" }\n}\n\nview 首页 {\n  title \"我的待办\"\n  stat \"进度\" progress()\n  form Todo\n  list Todo title\n  button \"清除已完成\" -> clear_done\n}\n\nview 表格 {\n  title \"全部任务\"\n  table Todo\n}\n\nfn label(p: Int) -> Text\n  requires p >= 1\n  ensures len(result) > 0\n{\n  match p { 1 => \"低\", 2 => \"中\", _ => \"高\" }\n}\n\nexample label(1) == \"低\"\nexample label(5) == \"高\"\n\ntest \"新建任务默认未完成\" {\n  let t = insert(Todo, {title: \"测试\"})\n  assert(t.done == false)\n  assert(t.priority == 1)\n}\n\ntest \"优先级不能超过 5\" {\n  var failed = false\n  try { insert(Todo, {title: \"x\", priority: 9}) } catch e { failed = true }\n  assert(failed, \"invariant should reject priority 9\")\n}\n\nflow 每日整理 {\n  step \"统计\" { ctx.total = count(Todo) }\n  step \"清理已完成\" { for t in where(Todo, fn(x) => x.done) { remove(Todo, t) } }\n  step \"报告\" { \"清理后剩余 {count(Todo)} / 原有 {ctx.total}\" }\n}\n",
+   "ok": true
+  }
+ },
+ {
+  "kind": "ops",
+  "file": "examples/todo.ae",
+  "ops": [
+   {
+    "op": "rename",
+    "old": "Todo",
+    "new": "Task"
+   }
+  ],
+  "expect": {
+   "source": "// 待办应用：一份描述 = 数据库 + API + 界面\nmodule 待办清单\n\nentity Task {\n  title: Text\n  done: Bool = false\n  priority: Int = 1\n  invariant priority >= 1 and priority <= 5\n  invariant len(title) > 0\n}\n\naction toggle(t: Task) {\n  t.done = not t.done\n}\n\naction bump(t: Task)\n  requires t.priority < 5\n{\n  t.priority += 1\n}\n\naction clear_done() allow admin {\n  for t in where(Task, fn(x) => x.done) { remove(Task, t) }\n}\n\nfn progress() -> Text ! db {\n  let n = count(Task)\n  if n == 0 { \"还没有任务\" } else { \"{len(where(Task, fn(x) => x.done))} / {n} 已完成\" }\n}\n\nview 首页 {\n  title \"我的待办\"\n  stat \"进度\" progress()\n  form Task\n  list Task title\n  button \"清除已完成\" -> clear_done\n}\n\nview 表格 {\n  title \"全部任务\"\n  table Task\n}\n\nfn label(p: Int) -> Text\n  requires p >= 1\n  ensures len(result) > 0\n{\n  match p { 1 => \"低\", 2 => \"中\", _ => \"高\" }\n}\n\nexample label(1) == \"低\"\nexample label(5) == \"高\"\n\ntest \"新建任务默认未完成\" {\n  let t = insert(Task, {title: \"测试\"})\n  assert(t.done == false)\n  assert(t.priority == 1)\n}\n\ntest \"优先级不能超过 5\" {\n  var failed = false\n  try { insert(Task, {title: \"x\", priority: 9}) } catch e { failed = true }\n  assert(failed, \"invariant should reject priority 9\")\n}\n\nflow 每日整理 {\n  step \"统计\" { ctx.total = count(Task) }\n  step \"清理已完成\" { for t in where(Task, fn(x) => x.done) { remove(Task, t) } }\n  step \"报告\" { \"清理后剩余 {count(Task)} / 原有 {ctx.total}\" }\n}\n",
+   "ok": true
+  }
+ },
+ {
+  "kind": "ops",
+  "file": "examples/todo.ae",
+  "ops": [
+   {
+    "op": "remove_decl",
+    "name": "表格"
+   },
+   {
+    "op": "add_view_item",
+    "view": "首页",
+    "item": "stat \"总\" count(Todo)"
+   }
+  ],
+  "expect": {
+   "source": "// 待办应用：一份描述 = 数据库 + API + 界面\nmodule 待办清单\n\nentity Todo {\n  title: Text\n  done: Bool = false\n  priority: Int = 1\n  invariant priority >= 1 and priority <= 5\n  invariant len(title) > 0\n}\n\naction toggle(t: Todo) {\n  t.done = not t.done\n}\n\naction bump(t: Todo)\n  requires t.priority < 5\n{\n  t.priority += 1\n}\n\naction clear_done() allow admin {\n  for t in where(Todo, fn(x) => x.done) { remove(Todo, t) }\n}\n\nfn progress() -> Text ! db {\n  let n = count(Todo)\n  if n == 0 { \"还没有任务\" } else { \"{len(where(Todo, fn(x) => x.done))} / {n} 已完成\" }\n}\n\nview 首页 {\n  title \"我的待办\"\n  stat \"进度\" progress()\n  form Todo\n  list Todo title\n  button \"清除已完成\" -> clear_done\n  stat \"总\" count(Todo)\n}\n\n\n\nfn label(p: Int) -> Text\n  requires p >= 1\n  ensures len(result) > 0\n{\n  match p { 1 => \"低\", 2 => \"中\", _ => \"高\" }\n}\n\nexample label(1) == \"低\"\nexample label(5) == \"高\"\n\ntest \"新建任务默认未完成\" {\n  let t = insert(Todo, {title: \"测试\"})\n  assert(t.done == false)\n  assert(t.priority == 1)\n}\n\ntest \"优先级不能超过 5\" {\n  var failed = false\n  try { insert(Todo, {title: \"x\", priority: 9}) } catch e { failed = true }\n  assert(failed, \"invariant should reject priority 9\")\n}\n\nflow 每日整理 {\n  step \"统计\" { ctx.total = count(Todo) }\n  step \"清理已完成\" { for t in where(Todo, fn(x) => x.done) { remove(Todo, t) } }\n  step \"报告\" { \"清理后剩余 {count(Todo)} / 原有 {ctx.total}\" }\n}\n",
+   "ok": true
+  }
+ },
+ {
+  "kind": "ops",
+  "file": "examples/todo.ae",
+  "ops": [
+   {
+    "op": "remove_field",
+    "entity": "Todo",
+    "field": "priority"
+   }
+  ],
+  "expect": {
+   "source": "// 待办应用：一份描述 = 数据库 + API + 界面\nmodule 待办清单\n\nentity Todo {\n  title: Text\n  done: Bool = false\n  invariant priority >= 1 and priority <= 5\n  invariant len(title) > 0\n}\n\naction toggle(t: Todo) {\n  t.done = not t.done\n}\n\naction bump(t: Todo)\n  requires t.priority < 5\n{\n  t.priority += 1\n}\n\naction clear_done() allow admin {\n  for t in where(Todo, fn(x) => x.done) { remove(Todo, t) }\n}\n\nfn progress() -> Text ! db {\n  let n = count(Todo)\n  if n == 0 { \"还没有任务\" } else { \"{len(where(Todo, fn(x) => x.done))} / {n} 已完成\" }\n}\n\nview 首页 {\n  title \"我的待办\"\n  stat \"进度\" progress()\n  form Todo\n  list Todo title\n  button \"清除已完成\" -> clear_done\n}\n\nview 表格 {\n  title \"全部任务\"\n  table Todo\n}\n\nfn label(p: Int) -> Text\n  requires p >= 1\n  ensures len(result) > 0\n{\n  match p { 1 => \"低\", 2 => \"中\", _ => \"高\" }\n}\n\nexample label(1) == \"低\"\nexample label(5) == \"高\"\n\ntest \"新建任务默认未完成\" {\n  let t = insert(Todo, {title: \"测试\"})\n  assert(t.done == false)\n  assert(t.priority == 1)\n}\n\ntest \"优先级不能超过 5\" {\n  var failed = false\n  try { insert(Todo, {title: \"x\", priority: 9}) } catch e { failed = true }\n  assert(failed, \"invariant should reject priority 9\")\n}\n\nflow 每日整理 {\n  step \"统计\" { ctx.total = count(Todo) }\n  step \"清理已完成\" { for t in where(Todo, fn(x) => x.done) { remove(Todo, t) } }\n  step \"报告\" { \"清理后剩余 {count(Todo)} / 原有 {ctx.total}\" }\n}\n",
+   "ok": false
+  }
+ },
+ {
+  "kind": "ops",
+  "file": "examples/todo.ae",
+  "ops": [
+   {
+    "op": "set_effects",
+    "fn": "progress",
+    "effects": [
+     "db",
+     "io"
+    ]
+   }
+  ],
+  "expect": {
+   "source": "// 待办应用：一份描述 = 数据库 + API + 界面\nmodule 待办清单\n\nentity Todo {\n  title: Text\n  done: Bool = false\n  priority: Int = 1\n  invariant priority >= 1 and priority <= 5\n  invariant len(title) > 0\n}\n\naction toggle(t: Todo) {\n  t.done = not t.done\n}\n\naction bump(t: Todo)\n  requires t.priority < 5\n{\n  t.priority += 1\n}\n\naction clear_done() allow admin {\n  for t in where(Todo, fn(x) => x.done) { remove(Todo, t) }\n}\n\nfn progress() -> Text ! db, io {\n  let n = count(Todo)\n  if n == 0 { \"还没有任务\" } else { \"{len(where(Todo, fn(x) => x.done))} / {n} 已完成\" }\n}\n\nview 首页 {\n  title \"我的待办\"\n  stat \"进度\" progress()\n  form Todo\n  list Todo title\n  button \"清除已完成\" -> clear_done\n}\n\nview 表格 {\n  title \"全部任务\"\n  table Todo\n}\n\nfn label(p: Int) -> Text\n  requires p >= 1\n  ensures len(result) > 0\n{\n  match p { 1 => \"低\", 2 => \"中\", _ => \"高\" }\n}\n\nexample label(1) == \"低\"\nexample label(5) == \"高\"\n\ntest \"新建任务默认未完成\" {\n  let t = insert(Todo, {title: \"测试\"})\n  assert(t.done == false)\n  assert(t.priority == 1)\n}\n\ntest \"优先级不能超过 5\" {\n  var failed = false\n  try { insert(Todo, {title: \"x\", priority: 9}) } catch e { failed = true }\n  assert(failed, \"invariant should reject priority 9\")\n}\n\nflow 每日整理 {\n  step \"统计\" { ctx.total = count(Todo) }\n  step \"清理已完成\" { for t in where(Todo, fn(x) => x.done) { remove(Todo, t) } }\n  step \"报告\" { \"清理后剩余 {count(Todo)} / 原有 {ctx.total}\" }\n}\n",
+   "ok": true
+  }
+ },
+ {
+  "kind": "ops",
+  "file": "examples/todo.ae",
+  "ops": [
+   {
+    "op": "replace_decl",
+    "name": "toggle",
+    "code": "action toggle(t: Todo) { t.done = true }"
+   }
+  ],
+  "expect": {
+   "source": "// 待办应用：一份描述 = 数据库 + API + 界面\nmodule 待办清单\n\nentity Todo {\n  title: Text\n  done: Bool = false\n  priority: Int = 1\n  invariant priority >= 1 and priority <= 5\n  invariant len(title) > 0\n}\n\naction toggle(t: Todo) { t.done = true }\n\naction bump(t: Todo)\n  requires t.priority < 5\n{\n  t.priority += 1\n}\n\naction clear_done() allow admin {\n  for t in where(Todo, fn(x) => x.done) { remove(Todo, t) }\n}\n\nfn progress() -> Text ! db {\n  let n = count(Todo)\n  if n == 0 { \"还没有任务\" } else { \"{len(where(Todo, fn(x) => x.done))} / {n} 已完成\" }\n}\n\nview 首页 {\n  title \"我的待办\"\n  stat \"进度\" progress()\n  form Todo\n  list Todo title\n  button \"清除已完成\" -> clear_done\n}\n\nview 表格 {\n  title \"全部任务\"\n  table Todo\n}\n\nfn label(p: Int) -> Text\n  requires p >= 1\n  ensures len(result) > 0\n{\n  match p { 1 => \"低\", 2 => \"中\", _ => \"高\" }\n}\n\nexample label(1) == \"低\"\nexample label(5) == \"高\"\n\ntest \"新建任务默认未完成\" {\n  let t = insert(Todo, {title: \"测试\"})\n  assert(t.done == false)\n  assert(t.priority == 1)\n}\n\ntest \"优先级不能超过 5\" {\n  var failed = false\n  try { insert(Todo, {title: \"x\", priority: 9}) } catch e { failed = true }\n  assert(failed, \"invariant should reject priority 9\")\n}\n\nflow 每日整理 {\n  step \"统计\" { ctx.total = count(Todo) }\n  step \"清理已完成\" { for t in where(Todo, fn(x) => x.done) { remove(Todo, t) } }\n  step \"报告\" { \"清理后剩余 {count(Todo)} / 原有 {ctx.total}\" }\n}\n",
+   "ok": true
+  }
+ },
+ {
+  "kind": "ops",
+  "file": "examples/todo.ae",
+  "ops": [
+   {
+    "op": "add_decl",
+    "code": "entity Note { body: Text }"
+   }
+  ],
+  "expect": {
+   "source": "// 待办应用：一份描述 = 数据库 + API + 界面\nmodule 待办清单\n\nentity Todo {\n  title: Text\n  done: Bool = false\n  priority: Int = 1\n  invariant priority >= 1 and priority <= 5\n  invariant len(title) > 0\n}\n\naction toggle(t: Todo) {\n  t.done = not t.done\n}\n\naction bump(t: Todo)\n  requires t.priority < 5\n{\n  t.priority += 1\n}\n\naction clear_done() allow admin {\n  for t in where(Todo, fn(x) => x.done) { remove(Todo, t) }\n}\n\nfn progress() -> Text ! db {\n  let n = count(Todo)\n  if n == 0 { \"还没有任务\" } else { \"{len(where(Todo, fn(x) => x.done))} / {n} 已完成\" }\n}\n\nview 首页 {\n  title \"我的待办\"\n  stat \"进度\" progress()\n  form Todo\n  list Todo title\n  button \"清除已完成\" -> clear_done\n}\n\nview 表格 {\n  title \"全部任务\"\n  table Todo\n}\n\nfn label(p: Int) -> Text\n  requires p >= 1\n  ensures len(result) > 0\n{\n  match p { 1 => \"低\", 2 => \"中\", _ => \"高\" }\n}\n\nexample label(1) == \"低\"\nexample label(5) == \"高\"\n\ntest \"新建任务默认未完成\" {\n  let t = insert(Todo, {title: \"测试\"})\n  assert(t.done == false)\n  assert(t.priority == 1)\n}\n\ntest \"优先级不能超过 5\" {\n  var failed = false\n  try { insert(Todo, {title: \"x\", priority: 9}) } catch e { failed = true }\n  assert(failed, \"invariant should reject priority 9\")\n}\n\nflow 每日整理 {\n  step \"统计\" { ctx.total = count(Todo) }\n  step \"清理已完成\" { for t in where(Todo, fn(x) => x.done) { remove(Todo, t) } }\n  step \"报告\" { \"清理后剩余 {count(Todo)} / 原有 {ctx.total}\" }\n}\n\nentity Note { body: Text }\n",
+   "ok": true
+  }
+ },
+ {
+  "kind": "propose",
+  "file": "examples/todo.ae",
+  "prompt": "给 Todo 添加字段 due: Text",
+  "expect": {
+   "summary": "给 Todo 添加字段 due",
+   "ops": [
+    {
+     "op": "add_field",
+     "entity": "Todo",
+     "field": "due",
+     "type": "Text"
+    }
+   ]
+  }
+ },
+ {
+  "kind": "propose",
+  "file": "examples/todo.ae",
+  "prompt": "新增实体 Note title: Text",
+  "expect": {
+   "summary": "新增实体 Note（自动获得数据表、API 和页面）",
+   "ops": [
+    {
+     "op": "add_decl",
+     "code": "entity Note {\n  title: Text\n}\n\nview Notes {\n  title \"Note\"\n  form Note\n  list Note\n}"
+    }
+   ]
+  }
+ },
+ {
+  "kind": "propose",
+  "file": "examples/todo.ae",
+  "prompt": "把 Todo 改名为 Task",
+  "expect": {
+   "summary": "重命名 Todo → Task",
+   "ops": [
+    {
+     "op": "rename",
+     "old": "Todo",
+     "new": "Task"
+    }
+   ]
+  }
+ },
+ {
+  "kind": "propose",
+  "file": "examples/todo.ae",
+  "prompt": "添加统计",
+  "expect": {
+   "summary": "在 首页 页面添加 Todo 数量统计",
+   "ops": [
+    {
+     "op": "add_view_item",
+     "view": "首页",
+     "item": "stat \"Todo 总数\" count(Todo)"
+    }
+   ]
+  }
+ },
+ {
+  "kind": "propose",
+  "file": "examples/todo.ae",
+  "prompt": "你好",
+  "expect": {
+   "summary": "Mock 模式未能理解该请求。可尝试：『给 Todo 添加字段 due: Text』『新增实体 Note title: Text』『修复错误』『把 Todo 改名为 Task』『添加统计』；或设置 AETHER_LLM_API_KEY 启用真实大模型。",
+   "ops": []
+  }
+ },
+ {
+  "kind": "propose",
+  "source": "fn f(x: Int) { print(x) }",
+  "prompt": "修复错误",
+  "expect": {
+   "summary": "根据诊断自动修复 1 处",
+   "ops": [
+    {
+     "op": "set_effects",
+     "fn": "f",
+     "effects": [
+      "io"
+     ]
+    }
+   ]
+  }
+ }
+]

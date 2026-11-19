@@ -1,0 +1,28 @@
+{
+  "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+  "name": "Aether",
+  "scopeName": "source.aether",
+  "patterns": [
+    { "include": "#comment" }, { "include": "#decl" }, { "include": "#string" }, { "include": "#number" },
+    { "include": "#keyword" }, { "include": "#type" }, { "include": "#call" }, { "include": "#operator" }
+  ],
+  "repository": {
+    "comment": { "name": "comment.line.double-slash.aether", "match": "//.*$" },
+    "decl": { "match": "\\b(entity|action|fn|view|flow|type|module)\\s+([A-Za-z_\\x{4e00}-\\x{9fff}][A-Za-z0-9_\\x{4e00}-\\x{9fff}]*)",
+      "captures": { "1": { "name": "keyword.declaration.aether" }, "2": { "name": "entity.name.type.aether" } } },
+    "keyword": { "patterns": [
+      { "name": "keyword.control.aether", "match": "\\b(if|else|while|for|in|match|return|try|catch|throw|spawn|await)\\b" },
+      { "name": "keyword.other.contract.aether", "match": "\\b(requires|ensures|invariant|allow|test|example|step)\\b" },
+      { "name": "storage.type.aether", "match": "\\b(let|var|import|entity|action|fn|view|flow|type|module)\\b" },
+      { "name": "keyword.operator.logical.aether", "match": "\\b(and|or|not)\\b" },
+      { "name": "constant.language.aether", "match": "\\b(true|false|nil|result|ctx)\\b" },
+      { "name": "support.function.view.aether", "match": "^\\s*(title|text|stat|form|list|table|chart|button)\\b" } ] },
+    "type": { "name": "support.type.aether", "match": "\\b(Int|Float|Text|Bool|Date|List|Map|Any|Option|Result)\\b" },
+    "number": { "name": "constant.numeric.aether", "match": "\\b\\d+(\\.\\d+)?\\b" },
+    "call": { "match": "([A-Za-z_\\x{4e00}-\\x{9fff}][A-Za-z0-9_\\x{4e00}-\\x{9fff}]*)\\s*(?=\\()", "captures": { "1": { "name": "entity.name.function.aether" } } },
+    "operator": { "name": "keyword.operator.aether", "match": "\\|>|=>|->|==|!=|<=|>=|\\+=|-=|[-+*/%<>=!]" },
+    "string": { "name": "string.quoted.double.aether", "begin": "\"", "end": "\"", "patterns": [
+      { "name": "constant.character.escape.aether", "match": "\\\\." },
+      { "name": "meta.interpolation.aether", "begin": "\\{", "end": "\\}", "beginCaptures": { "0": { "name": "punctuation.section.interpolation.begin.aether" } }, "endCaptures": { "0": { "name": "punctuation.section.interpolation.end.aether" } }, "patterns": [ { "include": "#number" }, { "include": "#keyword" }, { "include": "#call" }, { "include": "#operator" } ] } ] }
+  }
+}

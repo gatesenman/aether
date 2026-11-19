@@ -1,0 +1,39 @@
+module 小店
+theme { primary: "#0f766e", radius: 14 }
+auth {
+  roles admin, staff, customer
+  default customer
+  signup open
+  login required
+  can staff write Product
+  can customer read Product
+}
+entity Product {
+  name: Text
+  price: Int = 0
+  stock: Int = 0
+  invariant price >= 0
+}
+action restock(p: Product) allow staff {
+  p.stock += 10
+}
+flow 补货 {
+  step "检查" retry 2 backoff 10ms {
+    if attempt < 2 { throw "暂时失败" }
+    ctx.checked = true
+  }
+  step "完成" { ctx.done = true }
+}
+view 商店 {
+  title "小店" { color: "#0f766e" }
+  row {
+    card "库存" {
+      stat "商品数" count(Product)
+    }
+    card "说明" {
+      text "登录后可以浏览商品"
+    }
+  }
+  form Product
+  table Product
+}

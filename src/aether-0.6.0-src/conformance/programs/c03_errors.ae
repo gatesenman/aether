@@ -1,0 +1,26 @@
+fn safe(a: Int, b: Int) -> Int requires b != 0 ensures result * b == a { a / b }
+try { safe(1, 0) } catch e { print("E1", e) }
+print(safe(6, 3))
+fn bad(x: Int) -> Int ensures result > 0 { x }
+try { bad(-1) } catch e { print("E2", e) }
+try { throw {code: 7} } catch e { print("E3", e.code) }
+try { let z = [1][5] } catch e { print("E4", e) }
+try { let q = undefined_thing } catch e { print("E5", e) }
+try { assert(1 == 2, "nope") } catch e { print("E6", e) }
+try { error("custom") } catch e { print("E7", e) }
+try { 1 / 0 } catch e { print("E8", e) }
+try { let k = 1
+ k = 2 } catch e { print("E9", e) }
+try { {a: 1}.b } catch e { print("E10", e) }
+try { "a" - 1 } catch e { print("E11", e) }
+entity Acc { owner: Text  bal: Int = 0
+ invariant bal >= 0 }
+try { insert(Acc, {owner: "x", bal: -1}) } catch e { print("E12", e) }
+print(count(Acc))
+let a = insert(Acc, {owner: "y", bal: 5})
+a.bal = 3
+save(Acc, a)
+print(all(Acc), get(Acc, 1).bal)
+remove(Acc, a)
+print(count(Acc))
+throw "final uncaught"

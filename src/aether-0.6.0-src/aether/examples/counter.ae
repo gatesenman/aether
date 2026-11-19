@@ -1,0 +1,21 @@
+module 计数器
+
+entity Counter {
+  name: Text
+  value: Int = 0
+}
+
+action inc(c: Counter) { c.value += 1 }
+action dec(c: Counter) { c.value -= 1 }
+action reset_all() {
+  for c in all(Counter) { c.value = 0; save(Counter, c) }
+}
+
+view 计数 {
+  title "计数器"
+  stat "计数器数量" count(Counter)
+  stat "总和" sum(map(all(Counter), fn(c) => c.value))
+  form Counter
+  list Counter
+  button "全部归零" -> reset_all
+}

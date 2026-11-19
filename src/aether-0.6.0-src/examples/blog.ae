@@ -1,0 +1,40 @@
+module 博客
+
+entity Post {
+  title: Text
+  body: Text
+  author: Text = "匿名"
+  likes: Int = 0
+  published: Bool = false
+}
+
+entity Comment {
+  post_id: Int
+  text: Text
+}
+
+action like(p: Post) { p.likes += 1 }
+action publish(p: Post) { p.published = true }
+
+fn popular() -> List ! db {
+  sort(where(Post, fn(p) => p.likes > 0), fn(p) => 0 - p.likes)
+}
+
+view 文章 {
+  title "Aether 博客"
+  text "由一份 .ae 文件自动生成的博客：数据表、REST API 和界面都无需手写。"
+  stat "文章" count(Post)
+  stat "评论" count(Comment)
+  form Post
+  list Post title
+}
+
+view 热度 {
+  title "点赞排行"
+  chart Post likes
+}
+
+view 评论 {
+  form Comment
+  table Comment
+}

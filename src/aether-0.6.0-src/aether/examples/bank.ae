@@ -1,0 +1,62 @@
+// 契约式编程示例：前置条件、后置条件、不变式、权限、流程与内嵌测试
+module 银行
+
+entity Account {
+  owner: Text
+  balance: Int = 0
+  invariant balance >= 0
+  invariant len(owner) > 0
+}
+
+fn apply_fee(amount: Int) -> Int
+  requires amount >= 0
+  ensures result <= amount, result >= 0
+{
+  if amount > 100 { amount - 1 } else { amount }
+}
+
+action deposit(a: Account)
+  requires a.balance < 1000000
+  ensures a.balance > 0
+{
+  a.balance += 100
+}
+
+action withdraw(a: Account) {
+  a.balance -= 50          // 余额不足时不变式会拒绝这次写入
+}
+
+action audit_reset() allow admin, auditor {
+  for a in all(Account) { a.balance = 0; save(Account, a) }
+}
+
+example apply_fee(50) == 50
+example apply_fee(200) == 199
+
+test "取款不能透支" {
+  let a = insert(Account, {owner: "Ada"})
+  var blocked = false
+  try { a.balance = -10; save(Account, a) } catch e { blocked = true }
+  assert(blocked)
+}
+
+test "负数金额违反前置条件" {
+  var ok = false
+  try { apply_fee(-1) } catch e { ok = true }
+  assert(ok)
+}
+
+flow 月结 {
+  step "计息" { for a in all(Account) { a.balance += a.balance / 100; save(Account, a) } }
+  step "汇总" { ctx.total = sum(map(all(Account), fn(a) => a.balance)) }
+  step "报告" { "总余额 {ctx.total}" }
+}
+
+view 账户 {
+  title "Aether 银行"
+  stat "账户数" count(Account)
+  stat "总余额" sum(map(all(Account), fn(a) => a.balance))
+  form Account
+  list Account owner
+  button "审计清零" -> audit_reset
+}

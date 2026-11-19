@@ -1,0 +1,19 @@
+{
+ "entries": [
+  {
+   "id": 1,
+   "hash": "0c4154d56096",
+   "parent": null,
+   "author": "human",
+   "kind": "baseline",
+   "reason": "打开文件（基线）",
+   "ops": [],
+   "time": "2026-10-13 00:32:53",
+   "semantic_change": true
+  }
+ ],
+ "objects": {
+  "0c4154d56096": "// 客户管理（CRM）—— 一个清楚展示 M / V / C 三层的示例\n// ┌────────────┬──────────────────────────────┬────────────────────────────┐\n// │ 层         │ Aether 写法                  │ 自动得到                   │\n// ├────────────┼──────────────────────────────┼────────────────────────────┤\n// │ Model 模型 │ entity + 字段 + invariant     │ 数据表、校验、CRUD 接口     │\n// │ Controller │ action / flow / auth          │ 业务接口、权限、可恢复流程 │\n// │ View 界面  │ view / theme                  │ 页面、表单、列表、布局     │\n// └────────────┴──────────────────────────────┴────────────────────────────┘\nmodule 客户管理\n\n// ===================== Model（模型层） =====================\nentity Customer {\n  name: Text\n  phone: Text = \"\"\n  level: Text = \"普通\"\n  invariant len(name) \u003e 0\n}\n\nentity Deal {\n  title: Text\n  customer_id: Int          // 关系：每个商机属于一个客户（Deal N:1 Customer）\n  amount: Int = 0\n  stage: Text = \"线索\"\n  invariant amount \u003e= 0\n}\n\n// ===================== Controller（控制层） =====================\nauth {\n  roles admin, sales\n  default sales\n  signup open\n  login required\n  can sales write Customer, Deal\n}\n\nfn total_amount() -\u003e Int ! db {\n  let n = 0\n  for d in all(Deal) { n += d.amount }\n  n\n}\n\naction advance(d: Deal) allow sales\n  requires d.stage != \"成交\"\n{\n  if d.stage == \"线索\" { d.stage = \"谈判\" } else { d.stage = \"成交\" }\n}\n\naction upgrade(c: Customer) allow admin {\n  c.level = \"VIP\"\n}\n\nflow 每周报告 {\n  step \"统计\" retry 2 backoff 100ms {\n    ctx.total = total_amount()\n    ctx.deals = count(Deal)\n  }\n  step \"生成报告\" {\n    ctx.report = \"本周商机 {ctx.deals} 个，总金额 {ctx.total}\"\n    print(ctx.report)\n  }\n}\n\n// ===================== View（界面层） =====================\ntheme { primary: \"#2563eb\", radius: 10 }\n\nview 总览 {\n  title \"客户管理\"\n  row {\n    card \"客户\" { stat \"客户数\" count(Customer) }\n    card \"商机\" { stat \"总金额\" total_amount() }\n  }\n  section \"新增客户\"\n  form Customer\n  table Customer\n}\n\nview 商机 {\n  title \"商机管道\"\n  form Deal\n  table Deal\n  chart Deal amount\n}\n\ntest \"推进商机\" {\n  let c = insert(Customer, {name: \"甲公司\"})\n  let d = insert(Deal, {title: \"年度合同\", customer_id: c.id, amount: 100})\n  advance(d)\n  assert(d.stage == \"谈判\")\n}\n"
+ },
+ "pos": 0
+}

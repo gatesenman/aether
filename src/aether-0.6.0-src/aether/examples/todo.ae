@@ -1,0 +1,70 @@
+// 待办应用：一份描述 = 数据库 + API + 界面
+module 待办清单
+
+entity Todo {
+  title: Text
+  done: Bool = false
+  priority: Int = 1
+  invariant priority >= 1 and priority <= 5
+  invariant len(title) > 0
+}
+
+action toggle(t: Todo) {
+  t.done = not t.done
+}
+
+action bump(t: Todo)
+  requires t.priority < 5
+{
+  t.priority += 1
+}
+
+action clear_done() allow admin {
+  for t in where(Todo, fn(x) => x.done) { remove(Todo, t) }
+}
+
+fn progress() -> Text ! db {
+  let n = count(Todo)
+  if n == 0 { "还没有任务" } else { "{len(where(Todo, fn(x) => x.done))} / {n} 已完成" }
+}
+
+view 首页 {
+  title "我的待办"
+  stat "进度" progress()
+  form Todo
+  list Todo title
+  button "清除已完成" -> clear_done
+}
+
+view 表格 {
+  title "全部任务"
+  table Todo
+}
+
+fn label(p: Int) -> Text
+  requires p >= 1
+  ensures len(result) > 0
+{
+  match p { 1 => "低", 2 => "中", _ => "高" }
+}
+
+example label(1) == "低"
+example label(5) == "高"
+
+test "新建任务默认未完成" {
+  let t = insert(Todo, {title: "测试"})
+  assert(t.done == false)
+  assert(t.priority == 1)
+}
+
+test "优先级不能超过 5" {
+  var failed = false
+  try { insert(Todo, {title: "x", priority: 9}) } catch e { failed = true }
+  assert(failed, "invariant should reject priority 9")
+}
+
+flow 每日整理 {
+  step "统计" { ctx.total = count(Todo) }
+  step "清理已完成" { for t in where(Todo, fn(x) => x.done) { remove(Todo, t) } }
+  step "报告" { "清理后剩余 {count(Todo)} / 原有 {ctx.total}" }
+}
