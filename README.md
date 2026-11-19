@@ -1,44 +1,108 @@
-﻿# Aether 语言（0.6.0）
+<p align="center"><img src="src/aether-0.6.0-src/editors/vscode/media/aether.png" alt="Aether Language" width="128"></p>
 
-人与智能体共用的编程语言 + 运行时 + Aether IDE。
+# Aether 语言
 
-## 版本位置
+**0.6.0** · 人与智能体共用的编程语言、运行时与 Aether IDE：一份 `.ae` 文件同时描述数据库、后端 API 和前端界面。
 
-- **0.6.0（最新）**：`安装包\0.6.0\`；源码在 `源代码\aether-0.6.0-src.tar.gz`
-- 0.5.1：`安装包\0.5.1\`；源码 `源代码\aether-0.5.1-src.tar.gz`
-- 0.5.0：`安装包\Aether-IDE-0.5.0-win32-x64.zip`；源码 `源代码\aether-0.5.0-src.tar.gz`
+## 功能特性
 
-## 0.6.0 文件说明
+- 一份 `.ae` 源码覆盖类型、泛型、闭包、代数数据类型、模式匹配、异常、并发与效果系统。
+- 面向智能体的工具链：JSON IR、结构化诊断、结构化补丁协议，以及 MCP 接入（`aether mcp`）和 `aether agents -w` 生成 AGENTS.md。
+- Web IDE「Aether Studio」与 VS Code 扩展，支持人机协作编辑。
+- 0.6.0 新增：57 个错误码中文说明（`aether explain` / `aether errors`）、`aether migrate` 数据迁移、OpenAPI 3.1 导出（`aether openapi`）。
+- 可选原生 Go 运行时（`native/`），不必依赖浏览器。
 
-| 文件 | 说明 |
-|---|---|
-| `Aether-Setup-0.6.0-win32-x64.exe` | **标准图形安装向导**（NSIS，中文；欢迎→许可→组件→安装位置→进度条→完成。按当前用户安装到 `%LOCALAPPDATA%\Programs\Aether IDE`，无需管理员；自动创建开始菜单/桌面快捷方式、加入 PATH、在「已安装的应用」可卸载。约 158 MB，SHA256 `4e0e682c…47bc86` 已校验） |
-| `aether-0.6.0-windows-amd64.zip` | 仅命令行运行时 |
-| `Install-Aether.ps1` / `install.bat` | 脚本安装 |
-| `Aether-Launcher.exe` | 启动器 |
-| `SHA256SUMS` | 校验和 |
-| `evolution-0.6.md` / `changelog-0.6.0.md` | 三轮自进化报告 / 更新日志 |
+## 技术栈
 
-## 0.6.0 新增
+- 语言与 Python 工具链（需 Python 3.9+）
+- 原生运行时：Go 1.26+
+- 编辑器：VS Code 扩展与 Web IDE
 
-- `aether explain E200`、`aether errors`：57 个错误码中文说明
-- `aether migrate`（先计划，`--apply` 执行）、`aether openapi`（OpenAPI 3.1）
-- `aether mcp`（智能体接入）、`aether agents -w`（生成 AGENTS.md）
+## 从源码运行
 
-## 快速开始
+源码位于 `src/aether-0.6.0-src/`。本仓库不包含安装包。
 
-1. 双击 **`安装包\0.6.0\Aether-Setup-0.6.0-win32-x64.exe`**，按向导点「下一步」即可（如弹出 SmartScreen：更多信息 → 仍要运行）。卸载：设置 → 应用 → 已安装的应用 → Aether IDE 0.6.0。
-2. 打开 **Aether IDE**，或在终端：
+```bash
+cd src/aether-0.6.0-src
+# Linux / macOS
+./install.sh
+# Windows
+install.bat
 
-```bat
 aether new 我的项目 --template todo
 aether doctor
 cd 我的项目
-aether ui main.ae
+aether serve        # 或 aether studio / aether ui
 ```
 
-## 卸载
+也可用可编辑安装：`pip install -e .`（见 `pyproject.toml`）。原生运行时见 `native/`。
 
-```bat
-powershell -ExecutionPolicy Bypass -File "%LOCALAPPDATA%\Aether\Uninstall-Aether.ps1"
+## 文档
+
+- [更新日志 0.6.0](changelog-0.6.0.md)
+- [0.6 自进化记录](evolution-0.6.md)
+- [源码说明](src/aether-0.6.0-src/README.md)
+- [语言规范](src/aether-0.6.0-src/docs/02-语言规范.md)
+- [架构](src/aether-0.6.0-src/docs/03-架构.md)
+- [IDE 说明](src/aether-0.6.0-src/ide/README-IDE.md)
+- [Windows 安装说明](src/aether-0.6.0-src/docs/windows-install.md)
+
+## 许可证
+
+Python 包在 `src/aether-0.6.0-src/pyproject.toml` 中声明为 MIT。仓库根目录未附带 LICENSE 文件。编辑器资源还包含第三方字体/图标许可证。
+
+---
+
+## English
+
+# Aether Language
+
+**0.6.0** · A programming language, runtime, and IDE shared by humans and agents: one `.ae` file describes the database, backend API, and UI together.
+
+## Features
+
+- A `.ae` source file covers types, generics, closures, algebraic data types, pattern matching, exceptions, concurrency, and an effect system.
+- Agent-oriented toolchain: JSON IR, structured diagnostics, a structured patch protocol, MCP access (`aether mcp`), and `aether agents -w` to generate AGENTS.md.
+- Aether Studio (web IDE) and a VS Code extension for human–agent collaboration.
+- 0.6.0 adds Chinese explanations for 57 error codes (`aether explain` / `aether errors`), `aether migrate`, and OpenAPI 3.1 export (`aether openapi`).
+- Optional native Go runtime under `native/`, without requiring a browser.
+
+## Tech stack
+
+- 语言与 Python 工具链（需 Python 3.9+）
+- 原生运行时：Go 1.26+
+- 编辑器：VS Code 扩展与 Web IDE
+
+## Getting started
+
+Source lives in `src/aether-0.6.0-src/`. This repository does not include installers.
+
+```bash
+cd src/aether-0.6.0-src
+# Linux / macOS
+./install.sh
+# Windows
+install.bat
+
+aether new my-project --template todo
+aether doctor
+cd my-project
+aether serve        # or aether studio / aether ui
 ```
+
+Alternatively: `pip install -e .` (see `pyproject.toml`). The native runtime is under `native/`.
+
+## Documentation
+
+- [更新日志 0.6.0](changelog-0.6.0.md)
+- [0.6 自进化记录](evolution-0.6.md)
+- [源码说明](src/aether-0.6.0-src/README.md)
+- [语言规范](src/aether-0.6.0-src/docs/02-语言规范.md)
+- [架构](src/aether-0.6.0-src/docs/03-架构.md)
+- [IDE 说明](src/aether-0.6.0-src/ide/README-IDE.md)
+- [Windows 安装说明](src/aether-0.6.0-src/docs/windows-install.md)
+
+## License
+
+The Python package declares MIT in `src/aether-0.6.0-src/pyproject.toml`. There is no LICENSE file at the repository root. Editor assets also include third-party font/icon licenses.
+
