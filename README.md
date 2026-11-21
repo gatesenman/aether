@@ -37,13 +37,22 @@ aether serve        # 或 aether studio / aether ui
 
 ## 文档
 
+- [docs/evolution-0.6.md](docs/evolution-0.6.md)
+- [docs/native-runtime.md](docs/native-runtime.md)
+- [docs/ide-lsp.md](docs/ide-lsp.md)
+- [docs/review-v0.5.md](docs/review-v0.5.md)
+- [docs/mvc.md](docs/mvc.md)
 - [更新日志 0.6.0](changelog-0.6.0.md)
 - [0.6 自进化记录](evolution-0.6.md)
-- [源码说明](README.original.md)
 - [语言规范](docs/02-语言规范.md)
 - [架构](docs/03-架构.md)
 - [IDE 说明](ide/README-IDE.md)
 - [Windows 安装说明](docs/windows-install.md)
+
+
+## 贡献
+
+欢迎通过 Issue 和 Pull Request 参与，详见 [CONTRIBUTING.md](CONTRIBUTING.md)。安全问题请按 [SECURITY.md](SECURITY.md) 私下报告。参与时请遵守 [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md)。
 
 ## 许可证
 
@@ -90,15 +99,23 @@ Alternatively: `pip install -e .` (see `pyproject.toml`). The native runtime is 
 
 ## Documentation
 
+- [docs/evolution-0.6.md](docs/evolution-0.6.md)
+- [docs/native-runtime.md](docs/native-runtime.md)
+- [docs/ide-lsp.md](docs/ide-lsp.md)
+- [docs/review-v0.5.md](docs/review-v0.5.md)
+- [docs/mvc.md](docs/mvc.md)
 - [更新日志 0.6.0](changelog-0.6.0.md)
 - [0.6 自进化记录](evolution-0.6.md)
-- [源码说明](README.original.md)
 - [语言规范](docs/02-语言规范.md)
 - [架构](docs/03-架构.md)
 - [IDE 说明](ide/README-IDE.md)
 - [Windows 安装说明](docs/windows-install.md)
 
+
+## Contributing
+
+Issues and pull requests are welcome. See [CONTRIBUTING.md](CONTRIBUTING.md). Please report vulnerabilities privately via [SECURITY.md](SECURITY.md). This project follows [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md).
+
 ## License
 
 The Python package declares MIT in `pyproject.toml`. There is no LICENSE file at the repository root. Editor assets also include third-party font/icon licenses.
-
