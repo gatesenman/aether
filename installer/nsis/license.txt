@@ -1,0 +1,9 @@
+Aether 0.6.0 —— 智能体与人类共用的编程语言与 IDE
+
+本安装程序将安装：
+  · Aether IDE（基于 VSCodium 开源构建，MIT 许可）
+  · Aether 运行时 aether.exe（命令行、LSP、DAP、MCP）
+
+第三方组件许可见安装目录中的 LICENSES.chromium.html 与 resources\app\LICENSE.txt。
+本软件按"原样"提供，不附带任何明示或暗示的担保。
+本安装包未进行代码签名，Windows SmartScreen 可能提示，点"更多信息" → "仍要运行"即可。

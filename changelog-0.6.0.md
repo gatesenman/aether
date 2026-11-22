@@ -8,3 +8,4 @@
 - **智能体接入**：`aether mcp`（7 个只读工具）、`aether agents -w` 生成 AGENTS.md，`aether new` 自动生成。
 - **IDE 扩展**：MCP 服务器注册；命令“解释错误码 / 生成 AGENTS.md / 数据迁移计划”。
 - `aether run --db F` 生效。
+- **Windows 安装向导**：正式安装包改为 NSIS 3 中文图形向导（源码 `installer/nsis/`）；`SRC`/`OutFile` 使用相对路径，可在编译时覆盖。

@@ -35,3 +35,11 @@ coverage/
 Thumbs.db
 *.swp
 .idea/
+
+# Prebuilt binaries and release installers (never commit these)
+release/
+release-*/
+/native/aether
+/native/aether.exe
+*.vsix
+*.deb

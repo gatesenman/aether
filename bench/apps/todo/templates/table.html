@@ -1,0 +1,11 @@
+<!doctype html>
+<html><body>
+<nav><a href="/">首页</a> <a href="/table">表格</a></nav>
+<h1>全部任务</h1>
+<table>
+  <tr><th>id</th><th>title</th><th>done</th><th>priority</th></tr>
+  {% for t in todos %}
+  <tr><td>{{ t.id }}</td><td>{{ t.title }}</td><td>{{ t.done }}</td><td>{{ t.priority }}</td></tr>
+  {% endfor %}
+</table>
+</body></html>

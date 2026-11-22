@@ -1,0 +1,6 @@
+// Minimal CRUD app: one entity, everything else (REST API, storage, form + list UI) is implicit.
+entity Note {
+  title: Text
+  body: Text
+  pinned: Bool = false
+}

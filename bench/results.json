@@ -1,0 +1,238 @@
+{
+ "tokens": [
+  {
+   "app": "todo",
+   "aether_text": {
+    "o200k_base": 281,
+    "cl100k_base": 290
+   },
+   "aether_text_nocomments": {
+    "o200k_base": 231,
+    "cl100k_base": 238
+   },
+   "aether_compact": {
+    "o200k_base": 190,
+    "cl100k_base": 197
+   },
+   "aether_skeleton": {
+    "o200k_base": 104,
+    "cl100k_base": 109
+   },
+   "ts_react_express_sql": {
+    "o200k_base": 1936,
+    "cl100k_base": 1896
+   },
+   "python_fastapi_sqlalchemy_jinja": {
+    "o200k_base": 1508,
+    "cl100k_base": 1484
+   },
+   "roundtrip_ast_equal": true
+  },
+  {
+   "app": "notes",
+   "aether_text": {
+    "o200k_base": 45,
+    "cl100k_base": 45
+   },
+   "aether_text_nocomments": {
+    "o200k_base": 21,
+    "cl100k_base": 21
+   },
+   "aether_compact": {
+    "o200k_base": 12,
+    "cl100k_base": 12
+   },
+   "aether_skeleton": {
+    "o200k_base": 17,
+    "cl100k_base": 17
+   },
+   "ts_react_express_sql": {
+    "o200k_base": 794,
+    "cl100k_base": 782
+   },
+   "python_fastapi_sqlalchemy_jinja": {
+    "o200k_base": 798,
+    "cl100k_base": 793
+   },
+   "roundtrip_ast_equal": true
+  },
+  {
+   "app": "crm (no other-stack port)",
+   "aether_text": {
+    "o200k_base": 647,
+    "cl100k_base": 714
+   },
+   "aether_text_nocomments": {
+    "o200k_base": 455,
+    "cl100k_base": 484
+   },
+   "aether_compact": {
+    "o200k_base": 348,
+    "cl100k_base": 374
+   },
+   "aether_skeleton": {
+    "o200k_base": 184,
+    "cl100k_base": 196
+   },
+   "roundtrip_ast_equal": true
+  }
+ ],
+ "generation": {
+  "agent": "built-in offline rule agent (no LLM available on this box)",
+  "n": 20,
+  "first_try_check_pass": 18,
+  "first_try_pass_and_changed": 11,
+  "cases": [
+   {
+    "template": "todo",
+    "prompt": "加一个字段 due: Text",
+    "check_pass": true,
+    "made_change": true,
+    "summary": "给 Todo 添加字段 due"
+   },
+   {
+    "template": "todo",
+    "prompt": "给 Todo 加字段 tag",
+    "check_pass": true,
+    "made_change": false,
+    "summary": "Mock 模式未能理解该请求。可尝试：『给 Todo 添加字段 due: Text』『新增实体 Note title: Text』『修复错误』『把 Todo 改"
+   },
+   {
+    "template": "todo",
+    "prompt": "add field note: Text to Todo",
+    "check_pass": true,
+    "made_change": true,
+    "summary": "给 Todo 添加字段 note"
+   },
+   {
+    "template": "todo",
+    "prompt": "加一个实体 Tag，字段 name",
+    "check_pass": true,
+    "made_change": true,
+    "summary": "新增实体 Tag（自动获得数据表、API 和页面）"
+   },
+   {
+    "template": "todo",
+    "prompt": "add an entity Project with field name",
+    "check_pass": true,
+    "made_change": true,
+    "summary": "新增实体 Project（自动获得数据表、API 和页面）"
+   },
+   {
+    "template": "todo",
+    "prompt": "加一个统计 完成数",
+    "check_pass": true,
+    "made_change": true,
+    "summary": "在 首页 页面添加 Todo 数量统计"
+   },
+   {
+    "template": "todo",
+    "prompt": "加一个表格页面",
+    "check_pass": true,
+    "made_change": false,
+    "summary": "Mock 模式未能理解该请求。可尝试：『给 Todo 添加字段 due: Text』『新增实体 Note title: Text』『修复错误』『把 Todo 改"
+   },
+   {
+    "template": "todo",
+    "prompt": "add a test for toggle",
+    "check_pass": true,
+    "made_change": false,
+    "summary": "Mock 模式未能理解该请求。可尝试：『给 Todo 添加字段 due: Text』『新增实体 Note title: Text』『修复错误』『把 Todo 改"
+   },
+   {
+    "template": "shop",
+    "prompt": "加一个字段 stock: Int",
+    "check_pass": false,
+    "made_change": true,
+    "summary": "给 Product 添加字段 stock"
+   },
+   {
+    "template": "shop",
+    "prompt": "给 Product 加字段 sku",
+    "check_pass": true,
+    "made_change": false,
+    "summary": "Mock 模式未能理解该请求。可尝试：『给 Todo 添加字段 due: Text』『新增实体 Note title: Text』『修复错误』『把 Todo 改"
+   },
+   {
+    "template": "shop",
+    "prompt": "加一个实体 Coupon，字段 code, percent: Int",
+    "check_pass": true,
+    "made_change": true,
+    "summary": "新增实体 Coupon（自动获得数据表、API 和页面）"
+   },
+   {
+    "template": "shop",
+    "prompt": "add a view 报表 with a table of Product",
+    "check_pass": true,
+    "made_change": true,
+    "summary": "新增实体 with（自动获得数据表、API 和页面）"
+   },
+   {
+    "template": "blog",
+    "prompt": "加一个字段 tags: Text",
+    "check_pass": true,
+    "made_change": true,
+    "summary": "给 Post 添加字段 tags"
+   },
+   {
+    "template": "blog",
+    "prompt": "加一个实体 Comment，字段 body, post_id: Int",
+    "check_pass": false,
+    "made_change": true,
+    "summary": "给 Comment 添加字段 post_id"
+   },
+   {
+    "template": "blog",
+    "prompt": "加一个列表页面",
+    "check_pass": true,
+    "made_change": false,
+    "summary": "Mock 模式未能理解该请求。可尝试：『给 Todo 添加字段 due: Text』『新增实体 Note title: Text』『修复错误』『把 Todo 改"
+   },
+   {
+    "template": "crm",
+    "prompt": "给 Customer 加字段 phone",
+    "check_pass": true,
+    "made_change": false,
+    "summary": "Mock 模式未能理解该请求。可尝试：『给 Todo 添加字段 due: Text』『新增实体 Note title: Text』『修复错误』『把 Todo 改"
+   },
+   {
+    "template": "crm",
+    "prompt": "加一个实体 Note，字段 text, customer_id: Int",
+    "check_pass": true,
+    "made_change": true,
+    "summary": "新增实体 Note（自动获得数据表、API 和页面）"
+   },
+   {
+    "template": "crm",
+    "prompt": "加一个动作 归档客户",
+    "check_pass": true,
+    "made_change": false,
+    "summary": "Mock 模式未能理解该请求。可尝试：『给 Todo 添加字段 due: Text』『新增实体 Note title: Text』『修复错误』『把 Todo 改"
+   },
+   {
+    "template": "blank",
+    "prompt": "做一个记账应用，实体 Expense，字段 item, amount: Int",
+    "check_pass": true,
+    "made_change": true,
+    "summary": "新增实体 Expense（自动获得数据表、API 和页面）"
+   },
+   {
+    "template": "blank",
+    "prompt": "make a notes app with entity Note title body",
+    "check_pass": true,
+    "made_change": true,
+    "summary": "新增实体 Note（自动获得数据表、API 和页面）"
+   }
+  ]
+ },
+ "self_repair": {
+  "llm_rounds": 2,
+  "ok_after_repair": true,
+  "summary": "add finish（经过 1 轮自我修复）",
+  "round2_saw_diagnostic": true,
+  "system_prompt_tokens": {
+   "o200k_base": 413,
+   "cl100k_base": 408
+  }
+ }
+}

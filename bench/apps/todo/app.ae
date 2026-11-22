@@ -1,0 +1,44 @@
+// Same feature set in every stack: Todo entity with validation, REST CRUD,
+// toggle / bump (precondition) / clear_done (admin only), progress text,
+// a home page (stat + form + list + button) and a table page.
+module 待办清单
+
+entity Todo {
+  title: Text
+  done: Bool = false
+  priority: Int = 1
+  invariant priority >= 1 and priority <= 5
+  invariant len(title) > 0
+}
+
+action toggle(t: Todo) {
+  t.done = not t.done
+}
+
+action bump(t: Todo)
+  requires t.priority < 5
+{
+  t.priority += 1
+}
+
+action clear_done() allow admin {
+  for t in where(Todo, fn(x) => x.done) { remove(Todo, t) }
+}
+
+fn progress() -> Text ! db {
+  let n = count(Todo)
+  if n == 0 { "还没有任务" } else { "{len(where(Todo, fn(x) => x.done))} / {n} 已完成" }
+}
+
+view 首页 {
+  title "我的待办"
+  stat "进度" progress()
+  form Todo
+  list Todo title
+  button "清除已完成" -> clear_done
+}
+
+view 表格 {
+  title "全部任务"
+  table Todo
+}

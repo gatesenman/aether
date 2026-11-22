@@ -1,0 +1,20 @@
+<!doctype html>
+<html><body>
+<h1>Note</h1>
+<form onsubmit="return add(event)">
+  <input name="title" placeholder="title"> <input name="body" placeholder="body">
+  <label><input type="checkbox" name="pinned"> pinned</label>
+  <button>＋ 新增 Note</button>
+</form>
+<ul>{% for n in notes %}<li>{{ n.title }} <button onclick="del({{ n.id }})">✕</button></li>{% endfor %}</ul>
+<script>
+async function add(e) {
+  e.preventDefault();
+  const f = new FormData(e.target);
+  await fetch('/api/note', {method: 'POST', headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({title: f.get('title'), body: f.get('body'), pinned: f.get('pinned') === 'on'})});
+  location.reload();
+}
+async function del(id) { await fetch('/api/note/' + id, {method: 'DELETE'}); location.reload(); }
+</script>
+</body></html>

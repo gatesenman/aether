@@ -20,7 +20,7 @@
 
 ## 从源码运行
 
-源码位于仓库根目录。本仓库不包含安装包。
+源码位于仓库根目录。本仓库不包含预编译安装包；Windows 图形安装向导源码在 [`installer/nsis/`](installer/nsis/)，说明见 [源码说明.md](源码说明.md) 与 [Windows 安装说明](docs/windows-install.md)。
 
 ```bash
 # Linux / macOS
@@ -48,6 +48,7 @@ aether serve        # 或 aether studio / aether ui
 - [架构](docs/03-架构.md)
 - [IDE 说明](ide/README-IDE.md)
 - [Windows 安装说明](docs/windows-install.md)
+- [源码说明](源码说明.md)
 
 
 ## 贡献
@@ -82,7 +83,7 @@ Python 包在 `pyproject.toml` 中声明为 MIT。仓库根目录未附带 LICEN
 
 ## Getting started
 
-Source is at the repository root. This repository does not include installers.
+Source is at the repository root. This repository does not include prebuilt installers. The Windows setup wizard source is in [`installer/nsis/`](installer/nsis/); see [源码说明.md](源码说明.md) and [Windows 安装说明](docs/windows-install.md).
 
 ```bash
 # Linux / macOS
@@ -110,6 +111,7 @@ Alternatively: `pip install -e .` (see `pyproject.toml`). The native runtime is 
 - [架构](docs/03-架构.md)
 - [IDE 说明](ide/README-IDE.md)
 - [Windows 安装说明](docs/windows-install.md)
+- [源码说明](源码说明.md)
 
 
 ## Contributing

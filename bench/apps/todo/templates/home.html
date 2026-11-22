@@ -1,0 +1,36 @@
+<!doctype html>
+<html><body>
+<nav><a href="/">首页</a> <a href="/table">表格</a></nav>
+<h1>我的待办</h1>
+<div class="stat"><span>进度</span><b>{{ progress }}</b></div>
+<div id="error"></div>
+<form onsubmit="return add(event)">
+  <input name="title" placeholder="title">
+  <input name="priority" type="number" value="1">
+  <button>＋ 新增 Todo</button>
+</form>
+<ul>
+{% for t in todos %}
+  <li>{{ t.title }}
+    <button onclick="act('/api/todo/{{ t.id }}/toggle','POST')">toggle</button>
+    <button onclick="act('/api/todo/{{ t.id }}/bump','POST')">bump</button>
+    <button onclick="act('/api/todo/{{ t.id }}','DELETE')">✕</button>
+  </li>
+{% endfor %}
+</ul>
+<button onclick="act('/api/clear_done','POST')">清除已完成</button>
+<script>
+async function act(path, method, body) {
+  const r = await fetch(path, {method, headers: {'Content-Type': 'application/json', 'x-role': localStorage.role || ''},
+    body: body ? JSON.stringify(body) : undefined});
+  if (!r.ok) { document.getElementById('error').textContent = (await r.json()).detail; return; }
+  location.reload();
+}
+function add(e) {
+  e.preventDefault();
+  const f = new FormData(e.target);
+  act('/api/todo', 'POST', {title: f.get('title'), priority: Number(f.get('priority'))});
+  return false;
+}
+</script>
+</body></html>
