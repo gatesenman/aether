@@ -4,7 +4,7 @@ usage: python3 brand.py <app-resources-dir> <platform: linux-x64|win32-x64|darwi
 import json, os, shutil, sys
 
 app, plat, native, extsrc = sys.argv[1:5]
-V = "0.5.0"
+V = "0.6.0"
 p = os.path.join(app, "product.json")
 d = json.load(open(p, encoding="utf-8"))
 d.update({

@@ -1,6 +1,6 @@
-"""Dependency-free wheel builder (no setuptools needed): python3 mkwheel.py -> dist/aether_lang-0.5.0-py3-none-any.whl"""
+"""Dependency-free wheel builder (no setuptools needed): python3 mkwheel.py -> dist/aether_lang-0.6.0-py3-none-any.whl"""
 import zipfile, hashlib, base64, os, glob
-V = "0.5.0"; N = "aether_lang"; DI = f"{N}-{V}.dist-info"
+V = "0.6.0"; N = "aether_lang"; DI = f"{N}-{V}.dist-info"
 os.makedirs("dist", exist_ok=True); out = f"dist/{N}-{V}-py3-none-any.whl"
 files = {}
 for p in glob.glob("aether/**/*", recursive=True):
