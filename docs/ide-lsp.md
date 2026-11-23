@@ -30,8 +30,8 @@ v0.4 把 Aether 的语言智能从"专用面板"改为**标准 LSP 语言扩展*
 - `vscode-languageclient` 启动内置的原生二进制（`bin/<平台>/aether lsp`），或设置 `aether.server.path`，或 PATH
 - 应用预览 Webview（嵌入 `aether/preview` 的实时地址，编辑后自动刷新）
 - 智能体面板（Webview 视图，Codicons 图标）、语义历史树（撤销/重做）、契约树、测试资源管理器（Testing API）、运行程序/流程
-- 打包：`editors/vscode/package.sh` → 通用 `aether-vscode-0.5.0.vsix` + 6 个平台专用 .vsix（内置原生二进制）
-- 安装：`code --install-extension aether-vscode-0.5.0-linux-x64.vsix`（Cursor/VSCodium 同理，或在扩展视图中"从 VSIX 安装"）
+- 打包：`editors/vscode/package.sh` → 通用 `aether-vscode-0.6.0.vsix` + 6 个平台专用 .vsix（内置原生二进制）
+- 安装：`code --install-extension aether-vscode-0.6.0-linux-x64.vsix`（Cursor/VSCodium 同理，或在扩展视图中"从 VSIX 安装"）
 - 无界面集成测试：`test/suite/index.js` 在真实的 VSCodium 1.135 里（Xvfb）运行 14 项检查（激活、诊断、悬停、定义、引用、重命名、补全、大纲、语义着色、格式化、快速修复、智能体代码操作、命令注册、预览）
 
 ## 3. Aether IDE（`ide/`）

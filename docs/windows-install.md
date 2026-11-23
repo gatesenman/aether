@@ -1,8 +1,18 @@
 # Windows 安装说明（Aether 0.6.0）
 
+## 下载
+
+预编译安装包在 [GitHub Releases v0.6.0](https://github.com/gatesenman/aether/releases/tag/v0.6.0)，不在 git 源码树内。
+
+- 官方安装向导（推荐）：[Aether-Setup-0.6.0-win32-x64.exe](https://github.com/gatesenman/aether/releases/download/v0.6.0/Aether-Setup-0.6.0-win32-x64.exe)（SHA256 `4e0e682c8fa430db50688d1c55e2a6c05b15d865254db656b0ca7326aa47bc86`）
+- 便携包：[Aether-IDE-0.6.0-win32-x64.zip](https://github.com/gatesenman/aether/releases/download/v0.6.0/Aether-IDE-0.6.0-win32-x64.zip)（SHA256 `71c6bb926e08491cbe6cb1dcea0faa59c485428c4655d163060e25ed7f7d8e6e`）
+- 仅命令行：[aether-0.6.0-windows-amd64.zip](https://github.com/gatesenman/aether/releases/download/v0.6.0/aether-0.6.0-windows-amd64.zip)（SHA256 `6f7dbc7ee58b7e6c6bf8d75888f8f9d173a1681e49034e7bd4e65d00109d037c`）
+
+本轮核验范围：文件类型（Setup 为 PE/NSIS，便携包为 zip 且含 `Aether IDE.exe` 与 `bin/aether.exe`）、版本号（Wine 下 `aether.exe --version` 为 `aether 0.6.0 (native)`）、哈希一致。尚未在 Windows 真机上安装或启动 IDE。安装包未代码签名。
+
 ## 一键安装（推荐）：标准图形安装向导
 
-`Aether-Setup-0.6.0-win32-x64.exe` 用 **NSIS 3 + Modern UI 2** 制作，是标准的 Windows 图形安装向导，不会弹出黑色控制台窗口。界面为简体中文，安装包用 LZMA 固实压缩。本仓库只包含安装器源码，不含预编译的 Setup.exe。
+`Aether-Setup-0.6.0-win32-x64.exe` 用 **NSIS 3 + Modern UI 2** 制作，是标准的 Windows 图形安装向导，不会弹出黑色控制台窗口。界面为简体中文，安装包用 LZMA 固实压缩。仓库源码只包含安装器脚本；可下载的 Setup.exe 见上方发行页。
 
 1. 双击 `Aether-Setup-0.6.0-win32-x64.exe`。若 SmartScreen 提示「已保护你的电脑」，点「更多信息」→「仍要运行」（安装包未做代码签名）。
 2. 向导依次为：**欢迎 → 许可与说明 → 选择组件 → 选择安装位置 → 安装进度条 → 完成**（可勾选「运行 Aether IDE」）。
@@ -105,4 +115,4 @@ powershell -ExecutionPolicy Bypass -File "%LOCALAPPDATA%\Aether\Uninstall-Aether
 
 ## 与本机交付目录
 
-若本机曾用交付目录（例如 `GrokBot-Apps\Aether语言\`）存放安装包，请以该目录下 `安装包\0.6.0\` 中的 `Aether-Setup-0.6.0-win32-x64.exe` 为准；与仓库源码版本应对应 0.6.0。
+若本机曾用交付目录（例如 `GrokBot-Apps\Aether语言\`）存放安装包，可与发行页上的同名文件对照 SHA256。对外分发请以 [v0.6.0 Release](https://github.com/gatesenman/aether/releases/tag/v0.6.0) 上的资产为准。

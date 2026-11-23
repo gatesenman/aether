@@ -22,7 +22,7 @@ class NativeConformance(unittest.TestCase):
                     self.assertEqual(r.returncode, 0, f"{cmd} {f}: {r.stdout}{r.stderr}")
     def test_static(self):
         r = subprocess.run([BIN, "version"], capture_output=True, text=True)
-        self.assertRegex(r.stdout, r"0\.5\.\d+")
+        self.assertRegex(r.stdout, r"0\.6\.\d+")
 
 if __name__ == "__main__":
     unittest.main()

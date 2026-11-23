@@ -14,7 +14,7 @@ class V051(unittest.TestCase):
     def test_version(self):
         r = run("version")
         self.assertEqual(r.returncode, 0)
-        self.assertIn("0.5.1", r.stdout)
+        self.assertIn("0.6.0", r.stdout)
 
     def test_doctor(self):
         r = run("doctor")
