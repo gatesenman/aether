@@ -26,7 +26,17 @@ SHA256：
 
 本轮核验：Setup 为 Windows PE + NSIS（`MZ` / `NullsoftInst`）；便携包内含 `Aether IDE.exe` 与 `bin/aether.exe`；在 Linux 上用 Wine 运行 `aether.exe --version` 得到 `aether 0.6.0 (native)`，哈希与构建目录 `SHA256SUMS` 一致。安装包**尚未在 Windows 真机上安装或启动 IDE**，不能视为已完成 Windows 烟测。
 
-产品主界面的清晰截图目前缺失，待补；不使用有缺字或非真实界面的图片充数。
+## 界面截图
+
+以下三张来自本机既有交付目录中的真实产品界面（文件原件在 `/workspace/aether/screenshots/`，文件名标明 v0.4 / v0.5 e2e，时间约为 2026-11-18）。现已收入 `docs/screenshots/`。它们不是 0.6.0 Windows 安装后的新截图，也不是生成图；安装向导因缺中文字体而出现方框的旧图未采用。
+
+<p><img src="docs/screenshots/v04_aether_ide.png" alt="Aether IDE：源码、待办应用预览与智能体面板（既有 v0.4 真实界面）" width="800"></p>
+
+<p><img src="docs/screenshots/v05_e2e_03_project_opened.png" alt="Aether：打开客户管理项目（既有 v0.5 e2e 真实界面）" width="800"></p>
+
+<p><img src="docs/screenshots/v05_e2e_06_run_preview.png" alt="Aether：运行预览与登录页（既有 v0.5 e2e 真实界面）" width="800"></p>
+
+来源说明见 [docs/screenshots/README.md](docs/screenshots/README.md)。
 
 ## 功能特性
 
@@ -112,7 +122,9 @@ SHA256 values are listed in the Chinese section above. Setup is unsigned; Window
 
 Checks in this pass: the Setup file is a Windows PE / NSIS installer; the portable zip contains `Aether IDE.exe` and `bin/aether.exe`; `aether.exe --version` under Wine on Linux printed `aether 0.6.0 (native)`; hashes match the build manifest. The packages have **not** been installed or launched on a real Windows machine in this pass, so they are not claimed as Windows smoke-tested.
 
-Clear product UI screenshots are not available yet and are left as a follow-up. Broken or invented screenshots are not used.
+### Screenshots
+
+The three images in the Chinese section are real product UI captures copied from an existing local delivery folder (`/workspace/aether/screenshots/`, v0.4 / v0.5 e2e, around 2026-11-18) into `docs/screenshots/`. They are not new 0.6.0 Windows-install shots and not generated artwork. See [docs/screenshots/README.md](docs/screenshots/README.md).
 
 ## Features
 
