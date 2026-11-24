@@ -71,9 +71,38 @@
 验证：TestIterationNewSafety、TestIterationNewTemplates（全部5模板，包含 AGENTS.md/manifest/调试配置）与已有中文路径回归 PASS（round10-green.log）。
 反思：代码生成器也是数据安全边界；失败可能留下已生成的部分文件供检查，未宣称整个项目目录写入具备事务原子性。
 
-## 最终验证与交付（继续填充实际结果）
+## 最终验证与交付
 - 首次最终 Go 全量：PASS；TestX11ClipboardCrossClient 本次通过，但 TestX11ClipboardRead 为原有 live-only 跳过，不能计作通过。
 - 首次开启本次原生二进制的 Python 全量：68 tests，2 failures、0 skipped；两个旧测试硬编码要求 0.5.x/0.5.1，与基点已有 0.6.0 不符。已修测试为严格比对 native/cli.go 的实际声明版本，而非删掉版本断言；不修改产品版本。详见 final-python.log，修后另存 final-python-rerun.log。
 - 测试辅助脚本移除固定 /workspace 路径，非 Linux 无 /dev/shm 时退回普通 go test。
 - 最终复查延伸第5/8轮：CLI migrate 也复用了普通 OpenStore，顶层 insert 会在“计划”时写入；默认值函数同样可能写库。补充真实红绿回归 final-migration-safety-red/green.log：CLI 计划使用无修复只读快照、不创建缺失数据库；加载阶段禁止顶层写入，PlanMigration 全程禁止默认值/invariant 写库。--apply 仍需显式授权执行。此项是对已有两轮保证的复查补齐，不另凑轮数。
 - 最终复查第1轮的负数对称边界：直接拒绝正向超界幅度会连合法 -9223372036854775808 也拒绝。新增红绿回归 final-minint-red/green.log；仅对该唯一幅度延迟到语法上下文判断，允许负号与负数模式匹配，独立正数及更小负数继续拒绝。未声称处理所有算术运算溢出。
+
+### 最终代码验证矩阵（2026-11-24，Asia/Shanghai）
+
+| 项目 | 真实结果与日志 |
+|---|---|
+| 原生完整 Go 套件 | `tools/test-native.sh -count=1 -v ./...`：26 个顶层测试通过、1 个原有 live-only 跳过，退出 0；verified-go.log |
+| Python + 原生协议/HTTP/DAP/LSP 回归 | 设置 AETHER_NATIVE 指向本次编译二进制，68/68 通过、0 跳过；verified-python-execfs.log。未关闭文件/SQLite/子进程 ResourceWarning 仍存在，未压制。 |
+| 语言一致性 | `aether conform conformance/golden.json`：72 passed、0 failed；verified-conformance.log |
+| 项目模板 | blank/todo/shop/blog/crm 均 check ok；todo inline 4 passed、0 failed；verified-templates.log |
+| Go 静态检查 | `go vet ./...` 退出 0；verified-vet.log |
+| 跨平台 | CGO_ENABLED=0，Windows/amd64 与 macOS/amd64 `go build -trimpath` 成功；verified-cross.log；仅交叉编译，未运行 |
+| IDE 扩展 | 初次仅装 esbuild 编译因缺 vscode-languageclient 失败；随后按 package-lock `npm ci --ignore-scripts --no-audit --no-fund`，`npm run build` 成功；final-extension-install/rerun.log。node --check 扩展产物与测试 JS 成功；final-extension-static.log。不是 TypeScript 完整类型检查或 GUI 测试。 |
+| 安装器 | makensis 使用占位载荷编译 NSIS 脚本成功，final-nsis.log；仅语法/打包脚本验证，绝非可交付的完整 IDE 安装包，也没有运行安装/卸载 |
+| Shell 与差异 | sh -n 所列构建/测试脚本及 git diff --check 均成功 |
+| 源码包检查 | git 跟踪文件白名单打包；排除 .git、node_modules、缓存、预编译二进制与安装包；常见私钥/token 特征扫描无命中；source-audit.log |
+
+环境问题保留证据：最后完整链曾把 TMPDIR 指到 noexec 的 /dev/shm，导致 Python 部署脚本测试 PermissionError（verified-python.log）。改为工作树内可执行临时目录后，原测试未跳过、68/68 全通过（verified-python-execfs.log）。Go 仍用内存盘缓存/临时文件配合受控复制执行，以避开共享根盘容量压力。
+
+### 兼容性与未验证事项
+
+- 这是本地加固源码，不升版本、不推 GitHub、不建 Release、不更新用户 PC，既有安装包没有包含这些改动。
+- 有规则实体现在默认拒绝未授权操作；如确实需写入，补 `can ... write/manage Entity`。`aether new` 不再覆盖已有文件。迁移源码中的顶层写入改用明确的数据初始化命令，不能夹带在计划/迁移加载中。
+- 本次主要修改原生 Go 实现。Python 参考运行时仍为仓库原状态（元数据 0.5.0），未同步新增的全部安全边界；72 例一致性通过不等于所有边界行为完全等价。
+- MCP 禁止网络且迁移只读，但不是 OS 沙箱，尚无运行时 CPU/循环/睡眠/总内存硬限制。真实第三方智能体 MCP 会话、真实大模型、IDE GUI 启动交互均未验。
+- 原生 Windows/macOS 窗口、原生中文输入法仍未实现；没有声称覆盖所有语言/所有平台能力。
+- AeStore 仍为单机方案；迁移无跨进程锁、多行事务/在线迁移/断点续跑；未做断电或真实磁盘硬故障测试。故障 fsync 的最终持久化状态可能不确定，应备份重开。
+- 基线剪贴板跨客户端测试失败，最终完整运行通过，仍按环境相关偶发问题记录；live-only 读取测试跳过，不计入通过。
+- NSIS 为占位载荷静态验证，完整 Electron 外壳未重建、Windows 真机安装/卸载与代码签名未验；源码不含 VSCodium 全量源码。扩展现有 npm test 指向缺失的 test/runTest.js，未伪称 GUI 自动测试通过。
+- 源码 ZIP、完整中文说明、补丁、验证日志与 SHA256 放在 /workspace/delivery/aether-iteration10。只包含源码与文本证据，字体/图标资源及许可证保留。
