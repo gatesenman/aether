@@ -27,11 +27,13 @@ type table struct {
 	types  map[string]string
 }
 type Store struct {
-	mu     sync.RWMutex
-	path   string
-	f      *os.File
-	tables map[string]*table
-	lines  int
+	mu       sync.RWMutex
+	path     string
+	f        *os.File
+	tables   map[string]*table
+	lines    int
+	writeErr error
+	closed   bool
 }
 
 const compactThreshold = 500
@@ -112,6 +114,7 @@ func OpenStore(path string) (*Store, error) {
 func (s *Store) Close() error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
+	s.closed = true
 	if s.f != nil {
 		err := s.f.Close()
 		s.f = nil
@@ -170,20 +173,39 @@ func (s *Store) replay(m map[string]any) error {
 	return nil
 }
 func (s *Store) wal(op, name string, id int64, r *Record) {
-	s.lines++
-	if s.f == nil {
+	fail := func(err error) { s.writeErr = err; panic(aeErr("R060", 0, "store write failed: %v", err)) }
+	if s.closed {
+		fail(fmt.Errorf("store is closed"))
+	}
+	if s.writeErr != nil {
+		fail(s.writeErr)
+	}
+	if s.path == "" {
+		s.lines++
 		return
+	}
+	if s.f == nil {
+		fail(fmt.Errorf("store handle unavailable"))
+	}
+	// Compact the committed state BEFORE the new WAL entry; doing it afterwards
+	// discards the entry because callers have not updated their in-memory tables yet.
+	if s.lines > compactThreshold*2 {
+		if err := s.compactLocked(); err != nil {
+			fail(err)
+		}
 	}
 	line := `{"op": ` + jsonStr(op) + `, "t": ` + jsonStr(name) + `, "id": ` + strconv.FormatInt(id, 10)
 	if r != nil {
 		line += `, "r": ` + toJSON(r)
 	}
 	line += "}\n"
-	s.f.WriteString(line)
-	s.f.Sync()
-	if s.lines > compactThreshold*2 {
-		_ = s.compactLocked()
+	if _, err := s.f.WriteString(line); err != nil {
+		fail(err)
 	}
+	if err := s.f.Sync(); err != nil {
+		fail(err)
+	}
+	s.lines++
 }
 
 // compactLocked assumes s.mu is held. Closes the live handle, rewrites via tmp+rename, reopens.
@@ -203,18 +225,35 @@ func (s *Store) compactLocked() error {
 		return err
 	}
 	w := bufio.NewWriter(f)
+	var writeErr error
+	writeLine := func(line string) {
+		if writeErr == nil {
+			_, writeErr = w.WriteString(line)
+		}
+	}
 	n := 0
 	for name, t := range s.tables {
-		w.WriteString(`{"op": "seq", "t": ` + jsonStr(name) + `, "id": ` + strconv.FormatInt(t.nextID, 10) + "}\n")
+		writeLine(`{"op": "seq", "t": ` + jsonStr(name) + `, "id": ` + strconv.FormatInt(t.nextID, 10) + "}\n")
 		n++
 		for _, id := range sortedIDs(t) {
-			w.WriteString(`{"op": "put", "t": ` + jsonStr(name) + `, "id": ` + strconv.FormatInt(id, 10) + `, "r": ` + toJSON(t.rows[id]) + "}\n")
+			writeLine(`{"op": "put", "t": ` + jsonStr(name) + `, "id": ` + strconv.FormatInt(id, 10) + `, "r": ` + toJSON(t.rows[id]) + "}\n")
 			n++
 		}
 	}
-	w.Flush()
-	f.Sync()
-	f.Close()
+	if err := w.Flush(); writeErr == nil {
+		writeErr = err
+	}
+	if err := f.Sync(); writeErr == nil {
+		writeErr = err
+	}
+	if err := f.Close(); writeErr == nil {
+		writeErr = err
+	}
+	if writeErr != nil {
+		os.Remove(tmp)
+		s.f, _ = openStoreFile(s.path)
+		return writeErr
+	}
 	if err := os.Rename(tmp, s.path); err != nil {
 		os.Remove(tmp)
 		s.f, _ = openStoreFile(s.path)
@@ -325,32 +364,35 @@ func (s *Store) Get(name string, id int64) *Record {
 }
 func (s *Store) Insert(name string, rec *Record) *Record {
 	s.mu.Lock()
+	defer s.mu.Unlock()
 	t := s.tbl(name)
 	id := t.nextID
-	t.nextID++
 	r := s.in(t, rec, nil)
 	s.wal("put", name, id, r)
+	t.nextID++
 	t.rows[id] = r
-	s.mu.Unlock()
-	return s.Get(name, id)
+	return s.out(t, id, r)
 }
 func (s *Store) Update(name string, id int64, rec *Record) *Record {
 	s.mu.Lock()
+	defer s.mu.Unlock()
 	t := s.tbl(name)
 	if old, ok := t.rows[id]; ok {
 		r := s.in(t, rec, old.Copy())
 		s.wal("put", name, id, r)
 		t.rows[id] = r
 	}
-	s.mu.Unlock()
-	return s.Get(name, id)
+	if r := t.rows[id]; r != nil {
+		return s.out(t, id, r)
+	}
+	return nil
 }
 func (s *Store) Delete(name string, id int64) {
 	s.mu.Lock()
+	defer s.mu.Unlock()
 	t := s.tbl(name)
 	if _, ok := t.rows[id]; ok {
 		s.wal("del", name, id, nil)
 		delete(t.rows, id)
 	}
-	s.mu.Unlock()
 }

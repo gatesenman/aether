@@ -47,17 +47,17 @@ func (s *Store) rawEach(name string, f func(id int64, r *Record)) {
 }
 func (s *Store) rawPut(name string, id int64, r *Record) {
 	s.mu.Lock()
+	defer s.mu.Unlock()
 	t := s.tbl(name)
 	s.wal("put", name, id, r)
 	t.rows[id] = r
-	s.mu.Unlock()
 }
 func (s *Store) rawDel(name string, id int64) {
 	s.mu.Lock()
+	defer s.mu.Unlock()
 	t := s.tbl(name)
 	s.wal("del", name, id, nil)
 	delete(t.rows, id)
-	s.mu.Unlock()
 }
 
 func typeOK(ty string, v Value) bool {

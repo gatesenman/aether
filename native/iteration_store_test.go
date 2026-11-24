@@ -60,3 +60,44 @@ func TestIterationWALCorruption(t *testing.T) {
 		})
 	}
 }
+
+func TestIterationWALAutoCompact(t *testing.T) {
+	p := filepath.Join(t.TempDir(), "compact.aedb")
+	s, err := OpenStore(p)
+	if err != nil {
+		t.Fatal(err)
+	}
+	r := NewRec()
+	r.Set("title", "ok")
+	for id := int64(1); id <= 1002; id++ {
+		s.rawPut("Item", id, r)
+	}
+	s.Close()
+	s, err = OpenStore(p)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer s.Close()
+	if len(s.tables["Item"].rows) != 1002 {
+		t.Fatalf("compaction lost rows: %d", len(s.tables["Item"].rows))
+	}
+}
+func TestIterationWALWriteFailure(t *testing.T) {
+	p := filepath.Join(t.TempDir(), "fail.aedb")
+	s, err := OpenStore(p)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer s.Close()
+	s.Ensure(userDecl)
+	s.f.Close() // deterministic injected disk-handle failure
+	r := NewRec()
+	r.Set("username", "test")
+	err = catch(func() { s.Insert("_User", r) })
+	if err == nil {
+		t.Fatal("failed disk write reported success")
+	}
+	if len(s.All("_User")) != 0 {
+		t.Fatal("failed write changed memory")
+	}
+}

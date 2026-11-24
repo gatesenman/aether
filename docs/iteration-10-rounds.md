@@ -29,3 +29,9 @@
 验证：TestIterationWALRecovery（两种尾部）、TestIterationWALCorruption（三种损坏）及已有迁移测试 PASS，见 round03-green.log。
 反思：恢复不能只保证“本次读到”，还须验证恢复后继续写、再重启；未引入跨进程文件锁。
 
+## 第4轮：提交顺序与磁盘故障诚实失败
+证据：自动 compact 在 WAL 写完、内存尚未更新时执行，1002 次写入重开仅余 1001 行；关闭底层句柄后 Insert 仍报告成功。两项回归先红。
+实现：压缩移到新 WAL 写入之前；写入与 fsync 必须成功才更新内存/ID；失败以新错误码 R060 上抛并封锁该故障句柄后续写入；变更锁 defer 释放，避免异常死锁；压缩检查 flush/sync/close 再 rename。
+验证：TestIterationWAL*、TestEveryCodeDocumented、TestMigratePlanApply 全 PASS，见 round04-green.log。
+反思：第3轮解决恢复，第4轮补齐运行中提交，避免只测少量数据。未提供事务级多行原子提交；磁盘同步失败后持久化结果本身可能不确定，需备份并重开。
+
