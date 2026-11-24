@@ -47,3 +47,9 @@
 验证：TestIterationReadOnlyPermissions PASS；包括密码注册/会话签名、管理员创建、reader 读取、三种写操作拒绝、无 token 伪造 admin 角色仍 401（round06-green.log）。
 反思：这是安全收紧，依赖旧“read 隐含可写”行为的项目应补明确 write/manage；action/flow 仍使用自身授权约定，不宣称全局行级权限。
 
+## 第7轮：MCP 协议边界与参数类型
+证据：无效 JSON 被静默丢弃；null/数组/错误版本/非法 ID 与参数没有正确协议错误；大数 ID 经 float64 解码失精度；工具缺必填参数靠内部异常兜底。先红。
+实现：区分 -32700/-32600/-32602，保留合法通知无回复；UseNumber 保留 ID；校验工具参数声明、类型、必填字段和未知字段；协议版本只返回实际支持的 2025-06-18，不盲目回显任意版本；输出失败停止服务。旧测试补齐原本缺失的 JSON-RPC 版本。
+验证：TestIterationMCPValidation（8 种坏输入、大 ID、通知）与 TestOpenAPIAgentsMCP PASS（round07-green.log）。
+反思：协议错误应是机器可判定的数据，工具运行失败仍保留 isError；真实 Cursor 会话未测，执行权限问题留在下一轮单独处理。
+

@@ -6,11 +6,13 @@ package main
 
 import (
 	"bufio"
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"io"
 	"os"
 	"path/filepath"
+	"strings"
 )
 
 type mcpTool struct {
@@ -114,29 +116,41 @@ func mcpTools() []mcpTool {
 	}
 }
 
+func mcpError(id any, code int, msg string) map[string]any {
+	return map[string]any{"jsonrpc": "2.0", "id": id, "error": map[string]any{"code": code, "message": msg}}
+}
 func mcpHandle(m map[string]any) map[string]any {
 	method, _ := m["method"].(string)
 	id, hasID := m["id"]
+	validID := true
+	switch id.(type) {
+	case nil, string, json.Number, float64, int, int64:
+	default:
+		validID = false
+	}
+	if m["jsonrpc"] != "2.0" || method == "" || !validID {
+		return mcpError(nil, -32600, "invalid request")
+	}
 	if !hasID {
-		return nil // notification
+		return nil
 	}
 	resp := map[string]any{"jsonrpc": "2.0", "id": id}
-	params, _ := m["params"].(map[string]any)
+	params, ok := m["params"].(map[string]any)
+	if m["params"] != nil && !ok {
+		return mcpError(id, -32602, "params must be an object")
+	}
 	switch method {
 	case "initialize":
 		pv := "2025-06-18"
-		if p, ok := params["protocolVersion"].(string); ok && p != "" {
-			pv = p
-		}
 		resp["result"] = map[string]any{"protocolVersion": pv, "capabilities": map[string]any{"tools": map[string]any{}},
-			"serverInfo": map[string]any{"name": "aether", "version": Version},
+			"serverInfo":   map[string]any{"name": "aether", "version": Version},
 			"instructions": "Aether 语言工具。先 aether_skeleton 看全局，再 aether_context 取切片，改完用 aether_check / aether_test 验证。"}
 	case "ping":
 		resp["result"] = map[string]any{}
 	case "tools/list":
 		ts := []any{}
 		for _, t := range mcpTools() {
-			sc := map[string]any{"type": "object", "properties": t.Props}
+			sc := map[string]any{"type": "object", "properties": t.Props, "additionalProperties": false}
 			if len(t.Req) > 0 {
 				sc["required"] = t.Req
 			}
@@ -145,13 +159,30 @@ func mcpHandle(m map[string]any) map[string]any {
 		resp["result"] = map[string]any{"tools": ts}
 	case "tools/call":
 		name, _ := params["name"].(string)
-		args, _ := params["arguments"].(map[string]any)
+		args, argsOK := params["arguments"].(map[string]any)
+		if params["arguments"] != nil && !argsOK {
+			return mcpError(id, -32602, "arguments must be an object")
+		}
 		if args == nil {
 			args = map[string]any{}
 		}
 		for _, t := range mcpTools() {
 			if t.Name != name {
 				continue
+			}
+			for _, key := range t.Req {
+				v, ok := args[key].(string)
+				if !ok || strings.TrimSpace(v) == "" {
+					return mcpError(id, -32602, "missing string argument: "+key)
+				}
+			}
+			for key, v := range args {
+				if _, known := t.Props[key]; !known {
+					return mcpError(id, -32602, "unknown argument: "+key)
+				}
+				if _, ok := v.(string); !ok {
+					return mcpError(id, -32602, "argument must be a string: "+key)
+				}
 			}
 			var out any
 			var err error
@@ -188,11 +219,28 @@ func ServeMCP(in io.Reader, out io.Writer) {
 	enc := json.NewEncoder(out)
 	for sc.Scan() {
 		var m map[string]any
-		if json.Unmarshal(sc.Bytes(), &m) != nil {
+		dec := json.NewDecoder(bytes.NewReader(sc.Bytes()))
+		dec.UseNumber()
+		if err := dec.Decode(&m); err != nil {
+			code := -32700
+			if json.Valid(sc.Bytes()) {
+				code = -32600
+			}
+			enc.Encode(mcpError(nil, code, "invalid JSON-RPC message"))
+			continue
+		}
+		var extra any
+		if dec.Decode(&extra) != io.EOF {
+			enc.Encode(mcpError(nil, -32700, "trailing JSON content"))
 			continue
 		}
 		if r := mcpHandle(m); r != nil {
-			enc.Encode(r)
+			if err := enc.Encode(r); err != nil {
+				return
+			}
 		}
+	}
+	if sc.Err() != nil {
+		enc.Encode(mcpError(nil, -32700, "MCP input exceeds limit or could not be read"))
 	}
 }
