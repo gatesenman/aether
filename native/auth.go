@@ -241,7 +241,8 @@ func (a *App) handleAuth(method, path string, data *Record, user *Record, role s
 	return errResp(404, "no auth route "+method+" "+path)
 }
 
-// entityAllowed applies `can` rules. No rule for an entity/op => allowed (when logged in if login required).
+// entityAllowed applies entity-scoped allowlists. Once any rule names an entity,
+// operations not granted for that entity are denied. Unruled entities keep development defaults.
 func (a *App) entityAllowed(role, ent, op string) bool {
 	if !a.authOn() || role == a.adminRole() {
 		return true
@@ -249,12 +250,12 @@ func (a *App) entityAllowed(role, ent, op string) bool {
 	ruled, ok := false, false
 	for _, x := range a.It.Auth["rules"].([]any) {
 		r := x.(Node)
-		if !(r["op"] == op || r["op"] == "manage" || (op == "read" && r["op"] == "write")) {
-			continue
-		}
 		for _, e := range r["entities"].([]any) {
 			if e == ent {
 				ruled = true
+				if !(r["op"] == op || r["op"] == "manage" || (op == "read" && r["op"] == "write")) {
+					continue
+				}
 				for _, ro := range r["roles"].([]any) {
 					if ro == role {
 						ok = true

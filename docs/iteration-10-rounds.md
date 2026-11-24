@@ -41,3 +41,9 @@
 验证：TestIterationMigrationValidation 和已有 TestMigratePlanApply PASS（round05-green.log）。
 反思：检查 schema 不等于检查迁移后的数据。仍为离线迁移；重计划与写入之间没有跨进程锁，不能宣称支持在线并发迁移或多行原子性。
 
+## 第6轮：只读权限不能反而允许写入
+证据：auth 只写 can reader read Item 时，reader 的 POST/PATCH/DELETE 因“没有 write 规则”默认放行；先纠正测试中依赖换行的 auth 声明，再用旧实现重跑红测，日志为有效夹具的真实失败。
+实现：一旦任何 can 规则命名实体，该实体采用 allowlist；未授权操作默认拒绝。完全没有规则的实体保留原开发默认值，管理员保留权限。
+验证：TestIterationReadOnlyPermissions PASS；包括密码注册/会话签名、管理员创建、reader 读取、三种写操作拒绝、无 token 伪造 admin 角色仍 401（round06-green.log）。
+反思：这是安全收紧，依赖旧“read 隐含可写”行为的项目应补明确 write/manage；action/flow 仍使用自身授权约定，不宣称全局行级权限。
+
