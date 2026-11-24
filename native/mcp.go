@@ -33,6 +33,16 @@ func mcpSrc(a map[string]any) (string, string, error) {
 	return readSrc(f)
 }
 
+// Tool execution has no network capability; in-memory test writes remain supported.
+func mcpInterp(st *Store) *Interp {
+	it := newInterpWithStore(st, false)
+	it.Globals.Define("http_get", &Builtin{Name: "http_get", Effect: "net", F: func([]Value) Value {
+		panic(&AeThrow{"network effects are disabled in MCP tools"})
+	}}, false)
+	return it
+}
+func mcpMemoryInterp() *Interp { st, _ := OpenStore(":memory:"); return mcpInterp(st) }
+
 var strP = map[string]any{"type": "string"}
 var srcProps = map[string]any{"file": map[string]any{"type": "string", "description": ".ae 文件路径"}, "source": map[string]any{"type": "string", "description": "直接给出 Aether 源码"}}
 
@@ -54,7 +64,7 @@ func mcpTools() []mcpTool {
 			if err != nil {
 				return nil, err
 			}
-			it := NewInterp(":memory:", false)
+			it := mcpMemoryInterp()
 			if err := it.Load(s, d); err != nil {
 				return nil, err
 			}
@@ -92,9 +102,16 @@ func mcpTools() []mcpTool {
 				db = defaultDB(a["file"].(string))
 			}
 			if _, err := os.Stat(db); err != nil {
+				if !os.IsNotExist(err) {
+					return nil, err
+				}
 				return map[string]any{"steps": []any{}, "note": "数据库不存在：" + filepath.Base(db)}, nil
 			}
-			it := NewInterp(db, false)
+			store, err := OpenStoreReadOnly(db)
+			if err != nil {
+				return nil, err
+			}
+			it := mcpInterp(store)
 			defer it.Store.Close()
 			if err := it.Load(s, d); err != nil {
 				return nil, err
@@ -107,7 +124,7 @@ func mcpTools() []mcpTool {
 			if err != nil {
 				return nil, err
 			}
-			it := NewInterp(":memory:", false)
+			it := mcpMemoryInterp()
 			if err := it.Load(s, d); err != nil {
 				return nil, err
 			}

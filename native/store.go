@@ -34,12 +34,17 @@ type Store struct {
 	lines    int
 	writeErr error
 	closed   bool
+	readOnly bool
 }
 
 const compactThreshold = 500
 
-func OpenStore(path string) (*Store, error) {
-	s := &Store{path: path, tables: map[string]*table{}}
+func OpenStore(path string) (*Store, error) { return openStore(path, false) }
+
+// OpenStoreReadOnly replays a snapshot without creating, repairing or compacting the source.
+func OpenStoreReadOnly(path string) (*Store, error) { return openStore(path, true) }
+func openStore(path string, readOnly bool) (*Store, error) {
+	s := &Store{path: path, tables: map[string]*table{}, readOnly: readOnly}
 	if path == "" || path == ":memory:" {
 		s.path = ""
 		return s, nil
@@ -80,6 +85,10 @@ func OpenStore(path string) (*Store, error) {
 		}
 		s.lines++
 		validEnd += len(line)
+	}
+	if readOnly {
+		s.path = ""
+		return s, nil
 	}
 	if torn {
 		if err := os.Truncate(path, int64(validEnd)); err != nil {
@@ -174,6 +183,9 @@ func (s *Store) replay(m map[string]any) error {
 }
 func (s *Store) wal(op, name string, id int64, r *Record) {
 	fail := func(err error) { s.writeErr = err; panic(aeErr("R060", 0, "store write failed: %v", err)) }
+	if s.readOnly {
+		panic(aeErr("R060", 0, "read-only store: mutation is not allowed"))
+	}
 	if s.closed {
 		fail(fmt.Errorf("store is closed"))
 	}

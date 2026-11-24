@@ -6,7 +6,6 @@ import (
 
 	"strings"
 	"sync"
-
 )
 
 type retSig struct{ v Value }
@@ -42,6 +41,10 @@ func NewInterp(dbPath string, echo bool) *Interp {
 	if err != nil {
 		panic(err)
 	}
+	return newInterpWithStore(st, echo)
+}
+
+func newInterpWithStore(st *Store, echo bool) *Interp {
 	it := &Interp{Globals: NewEnv(nil), Entities: map[string]Node{}, Actions: map[string]Node{}, Flows: map[string]Node{},
 		Module: "main", Store: st, Echo: echo, BaseDir: "."}
 	installStdlib(it)
@@ -896,4 +899,3 @@ func (it *Interp) RunTests() []TestResult {
 	}
 	return res
 }
-

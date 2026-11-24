@@ -53,3 +53,9 @@
 验证：TestIterationMCPValidation（8 种坏输入、大 ID、通知）与 TestOpenAPIAgentsMCP PASS（round07-green.log）。
 反思：协议错误应是机器可判定的数据，工具运行失败仍保留 isError；真实 Cursor 会话未测，执行权限问题留在下一轮单独处理。
 
+## 第8轮：让“只读 MCP”真的不写用户库
+证据：aether_migrate_plan 使用普通 OpenStore，加载含顶层 insert 的源码会写入用户库；仅打开大 WAL 或断尾也会压缩/修复源文件；aether_test 可调用 http_get。三种真实副作用先红。
+实现：新增无创建/修复/压缩的只读 WAL 快照，写操作明确 R060 拒绝；MCP 迁移使用此快照；执行型 MCP 工具移除 http_get 网络能力；测试工具仍可在内存库正常测试 db 行为，普通 CLI 不受该能力限制影响。
+验证：TestIterationMCPReadOnly、TestIterationMCPNoNetwork、协议/旧 MCP 用例与 WAL 回归均 PASS（round08-green.log）。字节级比较原数据库未改变，本地 HTTP 哨兵零请求。
+反思：上一轮只保证协议正确，此轮补能力边界；这不是 OS 沙箱，未提供循环/睡眠/内存用量硬上限，不能运行不受信任源码并宣称完全隔离。
+
