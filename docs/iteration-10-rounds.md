@@ -17,3 +17,9 @@
 验证：tools/test-native.sh -run TestIterationNumericOverflow -v，PASS（round01-green.log）。
 反思：错误必须发生在最早的输入边界，不能用饱和值掩盖程序错误；暂不扩展任意精度整数。
 
+## 第2轮：解析递归预算
+证据：700 层括号、列表及 not 链在原解析器均被无限制接受；回归先失败。
+实现：共享 512 层递归预算，覆盖表达式、前缀、模式、块、类型、嵌套视图；超过时 E100，不依靠 recover 拦截不可恢复的栈耗尽。
+验证：TestIterationParserDepth 与 TestEveryCodeDocumented 均 PASS；20 层正常语法保留。日志 round02-red/green.log。
+反思：继第1轮数值边界后限定结构复杂度；这是深度预算而非执行超时或总 AST 大小预算，后者仍需后续治理。
+

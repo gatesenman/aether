@@ -11,10 +11,23 @@ type Node = map[string]any
 var prec = [][]string{{"or"}, {"and"}, {"==", "!=", "<", ">", "<=", ">="}, {"|>"}, {"+", "-"}, {"*", "/", "%"}}
 
 type Parser struct {
-	src string
-	t   []Tok
-	i   int
+	src   string
+	t     []Tok
+	i     int
+	depth int
 }
+
+// Bound recursive syntax before it can exhaust the process stack (IDE/MCP inputs).
+const maxParseDepth = 512
+
+func (p *Parser) enter() {
+	p.depth++
+	if p.depth > maxParseDepth {
+		t := p.peek(0)
+		throw(&AeError{"E100", "syntax nesting limit exceeded", t.Line, t.Col})
+	}
+}
+func (p *Parser) leave() { p.depth-- }
 
 func throw(e *AeError) { panic(e) }
 
@@ -308,6 +321,8 @@ func (p *Parser) decl() Node {
 var containerKinds = map[string]bool{"row": true, "column": true, "card": true, "grid": true}
 
 func (p *Parser) viewItems() []any {
+	p.enter()
+	defer p.leave()
 	items := []any{}
 	for !p.accept("}") {
 		it := p.peek(0)
@@ -373,6 +388,8 @@ func (p *Parser) tparams() []any {
 	return tp
 }
 func (p *Parser) type_() Node {
+	p.enter()
+	defer p.leave()
 	if p.accept("fn") {
 		args := []any{}
 		if p.accept("(") {
@@ -414,6 +431,8 @@ func (p *Parser) params() []any {
 	return ps
 }
 func (p *Parser) block() Node {
+	p.enter()
+	defer p.leave()
 	t := p.expect("{")
 	body := []any{}
 	for !p.accept("}") {
@@ -477,6 +496,10 @@ func (p *Parser) stmt() Node {
 	return nd("ExprStmt", L, "expr", e)
 }
 func (p *Parser) expr(lvl int) Node {
+	if lvl == 0 {
+		p.enter()
+		defer p.leave()
+	}
 	if lvl == len(prec) {
 		return p.unary()
 	}
@@ -493,6 +516,8 @@ func (p *Parser) expr(lvl int) Node {
 	return l
 }
 func (p *Parser) unary() Node {
+	p.enter()
+	defer p.leave()
 	t := p.peek(0)
 	if p.accept("-") {
 		return nd("Unary", t.Line, "op", "-", "e", p.unary())
@@ -533,6 +558,8 @@ func (p *Parser) postfix(e Node) Node {
 	}
 }
 func (p *Parser) primary() Node {
+	p.enter()
+	defer p.leave()
 	t := p.next()
 	L := t.Line
 	switch t.Kind {
@@ -617,6 +644,8 @@ func (p *Parser) primary() Node {
 	return nil
 }
 func (p *Parser) pattern() Node {
+	p.enter()
+	defer p.leave()
 	t := p.peek(0)
 	if t.Kind == "num" || t.Kind == "str" || p.at("true", "false", "nil") {
 		e := p.primary()
