@@ -54,17 +54,29 @@ type rpcMsg struct {
 
 func ReadLSPMessage(r *bufio.Reader) ([]byte, error) {
 	n := -1
+	headerBytes := 0
 	for {
-		line, err := r.ReadString('\n')
+		lineBytes, err := r.ReadSlice('\n')
 		if err != nil {
 			return nil, err
 		}
-		line = strings.TrimRight(line, "\r\n")
+		headerBytes += len(lineBytes)
+		if headerBytes > 8192 {
+			return nil, fmt.Errorf("LSP headers exceed limit")
+		}
+		line := strings.TrimRight(string(lineBytes), "\r\n")
 		if line == "" {
 			break
 		}
 		if k, v, ok := strings.Cut(line, ":"); ok && strings.EqualFold(strings.TrimSpace(k), "Content-Length") {
-			n, _ = strconv.Atoi(strings.TrimSpace(v))
+			if n != -1 {
+				return nil, fmt.Errorf("duplicate Content-Length")
+			}
+			value, err := strconv.Atoi(strings.TrimSpace(v))
+			if err != nil || value < 0 || value > 16<<20 {
+				return nil, fmt.Errorf("invalid Content-Length (limit 16 MiB)")
+			}
+			n = value
 		}
 	}
 	if n < 0 {
@@ -75,8 +87,11 @@ func ReadLSPMessage(r *bufio.Reader) ([]byte, error) {
 	return b, err
 }
 func WriteLSPMessage(w io.Writer, v any) error {
-	b, _ := json.Marshal(v)
-	_, err := fmt.Fprintf(w, "Content-Length: %d\r\n\r\n%s", len(b), b)
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+	_, err = fmt.Fprintf(w, "Content-Length: %d\r\n\r\n%s", len(b), b)
 	return err
 }
 
@@ -222,15 +237,30 @@ func (s *LSPServer) Handle(method string, raw json.RawMessage) (any, error) {
 		s.publish(uri)
 		return nil, nil
 	case "textDocument/didChange":
-		d := s.doc(uri)
+		d := s.docs[uri]
+		if d == nil {
+			return nil, fmt.Errorf("document is not open")
+		}
+		if p.TextDocument.Version <= d.Version {
+			return nil, nil
+		}
+		text := d.Text
 		for _, c := range p.ContentChanges {
 			if c.Range == nil {
-				d.Text = c.Text
-			} else {
-				a, b := PosToOff(d.Text, c.Range.Start), PosToOff(d.Text, c.Range.End)
-				d.Text = d.Text[:a] + c.Text + d.Text[b:]
+				text = c.Text
+				continue
 			}
+			start, end := c.Range.Start, c.Range.End
+			if start.Line < 0 || start.Character < 0 || end.Line < 0 || end.Character < 0 {
+				return nil, fmt.Errorf("invalid edit range")
+			}
+			a, b := PosToOff(text, start), PosToOff(text, end)
+			if a > b || OffToPos(text, a) != start || OffToPos(text, b) != end {
+				return nil, fmt.Errorf("invalid UTF-16 edit range")
+			}
+			text = text[:a] + c.Text + text[b:]
 		}
+		d.Text = text
 		d.Version = p.TextDocument.Version
 		d.preview = nil
 		s.publish(uri)

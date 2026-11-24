@@ -59,3 +59,9 @@
 验证：TestIterationMCPReadOnly、TestIterationMCPNoNetwork、协议/旧 MCP 用例与 WAL 回归均 PASS（round08-green.log）。字节级比较原数据库未改变，本地 HTTP 哨兵零请求。
 反思：上一轮只保证协议正确，此轮补能力边界；这不是 OS 沙箱，未提供循环/睡眠/内存用量硬上限，不能运行不受信任源码并宣称完全隔离。
 
+## 第9轮：LSP 有界帧与一致性编辑
+证据：Content-Length 非数字被当 0、重复头被后者覆盖，写帧忽略 JSON 编码失败；旧版本通知覆盖新文本，半个 UTF-16 代理对及倒置范围被错误应用。先红。
+实现：读取限制 8 KiB 头/16 MiB 内容，严格数字与重复头校验；写帧返回编码错误；忽略过期版本，对同通知多次编辑先在临时文本验证，全部成功再提交文本与版本；拒绝越界、倒置和半代理对位置。
+验证：TestIterationLSPFraming、TestIterationLSPEditConsistency PASS，涵盖中文及扩展汉字有效替换、多编辑失败不更新版本（round09-green.log）。
+反思：LSP 是 IDE 的状态边界，不能只测 hover 成功；16 MiB 超大文件需要拆分，未在 VS Code GUI 实测。
+
