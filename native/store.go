@@ -11,6 +11,8 @@ import (
 	"bufio"
 	"bytes"
 	"encoding/json"
+	"fmt"
+	"io"
 	"os"
 	"sort"
 	"strconv"
@@ -40,22 +42,46 @@ func OpenStore(path string) (*Store, error) {
 		s.path = ""
 		return s, nil
 	}
-	if data, err := os.ReadFile(path); err == nil {
-		sc := bufio.NewScanner(bytes.NewReader(data))
-		sc.Buffer(make([]byte, 1<<20), 64<<20)
-		for sc.Scan() {
-			line := sc.Bytes()
-			if len(line) == 0 {
-				continue
+	data, err := os.ReadFile(path)
+	if err != nil && !os.IsNotExist(err) {
+		return nil, err
+	}
+	validEnd := 0
+	torn := false
+	for _, line := range bytes.SplitAfter(data, []byte("\n")) {
+		if len(line) == 0 {
+			continue
+		}
+		if len(bytes.TrimSpace(line)) == 0 {
+			validEnd += len(line)
+			continue
+		}
+		dec := json.NewDecoder(bytes.NewReader(line))
+		dec.UseNumber()
+		var m map[string]any
+		err := dec.Decode(&m)
+		if err == nil {
+			var extra any
+			if dec.Decode(&extra) != io.EOF {
+				err = fmt.Errorf("trailing WAL content")
 			}
-			dec := json.NewDecoder(bytes.NewReader(line))
-			dec.UseNumber()
-			var m map[string]any
-			if dec.Decode(&m) != nil {
-				break // torn write at tail: stop replay
+		}
+		if err != nil {
+			if line[len(line)-1] != '\n' && validEnd+len(line) == len(data) {
+				torn = true
+				break
 			}
-			s.replay(m)
-			s.lines++
+			return nil, fmt.Errorf("corrupt WAL at byte %d: %w", validEnd, err)
+		}
+		if err := s.replay(m); err != nil {
+			return nil, fmt.Errorf("corrupt WAL at byte %d: %w", validEnd, err)
+		}
+		s.lines++
+		validEnd += len(line)
+	}
+	if torn {
+		if err := os.Truncate(path, int64(validEnd)); err != nil {
+			return nil, err
 		}
 	}
 	if s.lines > compactThreshold {
@@ -69,6 +95,17 @@ func OpenStore(path string) (*Store, error) {
 		return nil, err
 	}
 	s.f = f
+	// A complete final JSON object without a newline is valid, but needs a separator before appending.
+	if !torn && len(data) > 0 && data[len(data)-1] != '\n' {
+		if _, err := f.WriteString("\n"); err != nil {
+			f.Close()
+			return nil, err
+		}
+		if err := f.Sync(); err != nil {
+			f.Close()
+			return nil, err
+		}
+	}
 	return s, nil
 }
 
@@ -104,9 +141,20 @@ func (s *Store) tbl(name string) *table {
 	}
 	return t
 }
-func (s *Store) replay(m map[string]any) {
-	t := s.tbl(m["t"].(string))
-	id := fromJSON(m["id"]).(int64)
+func (s *Store) replay(m map[string]any) error {
+	name, ok := m["t"].(string)
+	n, idOK := m["id"].(json.Number)
+	id, err := n.Int64()
+	op, _ := m["op"].(string)
+	if !ok || name == "" || !idOK || err != nil || id < 1 || (op != "put" && op != "del" && op != "seq") {
+		return fmt.Errorf("invalid WAL operation/table/id")
+	}
+	if op == "put" {
+		if _, ok := m["r"].(map[string]any); !ok {
+			return fmt.Errorf("invalid WAL record")
+		}
+	}
+	t := s.tbl(name)
 	switch m["op"] {
 	case "put":
 		r := fromJSON(m["r"]).(*Record)
@@ -119,6 +167,7 @@ func (s *Store) replay(m map[string]any) {
 	case "seq":
 		t.nextID = id
 	}
+	return nil
 }
 func (s *Store) wal(op, name string, id int64, r *Record) {
 	s.lines++

@@ -23,3 +23,9 @@
 验证：TestIterationParserDepth 与 TestEveryCodeDocumented 均 PASS；20 层正常语法保留。日志 round02-red/green.log。
 反思：继第1轮数值边界后限定结构复杂度；这是深度预算而非执行超时或总 AST 大小预算，后者仍需后续治理。
 
+## 第3轮：WAL 断尾恢复后不再丢新增记录
+证据：已有完整记录后接半截 JSON，再打开并写入，下一次打开丢掉新记录；完整 JSON 无换行也有同类问题。损坏结构 {} 会 panic。先红。
+实现：仅截去未完成的最后一行；完整末行补分隔符；中部损坏与非法 op/table/id/record 返回错误并保留原文件；传播读取错误，不再当空库。
+验证：TestIterationWALRecovery（两种尾部）、TestIterationWALCorruption（三种损坏）及已有迁移测试 PASS，见 round03-green.log。
+反思：恢复不能只保证“本次读到”，还须验证恢复后继续写、再重启；未引入跨进程文件锁。
+
