@@ -35,3 +35,9 @@
 验证：TestIterationWAL*、TestEveryCodeDocumented、TestMigratePlanApply 全 PASS，见 round04-green.log。
 反思：第3轮解决恢复，第4轮补齐运行中提交，避免只测少量数据。未提供事务级多行原子提交；磁盘同步失败后持久化结果本身可能不确定，需备份并重开。
 
+## 第5轮：迁移验证实际回填候选值
+证据：新增 Int 字段默认 "bad" 或 nil，计划仍不阻塞；旧计划生成后数据变为违反 invariant，ApplyMigration 仍接受旧计划。先红。
+实现：验证 NewRecord 实际候选值（含默认值），非可空 nil 与基础类型不匹配列为 M403；默认表达式求值异常转阻塞；执行前重新计划而非信任外部传入旧步骤。
+验证：TestIterationMigrationValidation 和已有 TestMigratePlanApply PASS（round05-green.log）。
+反思：检查 schema 不等于检查迁移后的数据。仍为离线迁移；重计划与写入之间没有跨进程锁，不能宣称支持在线并发迁移或多行原子性。
+

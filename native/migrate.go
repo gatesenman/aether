@@ -112,11 +112,9 @@ func PlanMigration(it *Interp) []MigStep {
 		it.Store.rawEach(en, func(id int64, r *Record) {
 			total++
 			for _, n := range order {
-				v, ok := r.M[n]
+				_, ok := r.M[n]
 				if !ok {
 					missing[n]++
-				} else if !typeOK(fields[n]["type"].(Node)["name"].(string), v) {
-					badType[n]++
 				}
 			}
 			for k := range r.M {
@@ -124,7 +122,19 @@ func PlanMigration(it *Interp) []MigStep {
 					extra[k]++
 				}
 			}
-			full := it.NewRecord(it.Entities[en], r)
+			var full *Record
+			if err := catch(func() { full = it.NewRecord(it.Entities[en], r) }); err != nil {
+				inv++
+				invMsg = err.Error()
+				return
+			}
+			for _, n := range order {
+				ty := fields[n]["type"].(Node)
+				v := full.M[n]
+				if (v == nil && ty["optional"] != true) || !typeOK(ty["name"].(string), v) {
+					badType[n]++
+				}
+			}
 			if err := catch(func() { it.CheckInv(en, full) }); err != nil {
 				inv++
 				invMsg = err.Error()
@@ -190,6 +200,8 @@ func sortedKeysInt(m map[string]int) []string {
 
 // ApplyMigration executes non-blocking steps. Returns number of rows touched.
 func ApplyMigration(it *Interp, steps []MigStep, drop bool) (int, error) {
+	// Plans are advisory snapshots, not authority to bypass current validation.
+	steps = PlanMigration(it)
 	for _, s := range steps {
 		if s.Block {
 			return 0, fmt.Errorf("%s %s.%s：%s（先解决阻塞项）", s.Code, s.Entity, s.Field, s.Detail)
