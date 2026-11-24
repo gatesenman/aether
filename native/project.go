@@ -4,6 +4,7 @@ package main
 
 import (
 	"embed"
+	"encoding/json"
 	"fmt"
 	"io/fs"
 	"net"
@@ -11,6 +12,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"runtime"
+	"sort"
 	"strings"
 	"time"
 )
@@ -56,7 +58,41 @@ func tutorial(t Template, name string) string {
 `
 }
 
+// Never overwrite a source file, even if it appears after a directory preflight.
+func writeNewFile(path string, data []byte, mode fs.FileMode) error {
+	f, err := os.OpenFile(path, os.O_WRONLY|os.O_CREATE|os.O_EXCL, mode)
+	if err != nil {
+		return err
+	}
+	_, err = f.Write(data)
+	if closeErr := f.Close(); err == nil {
+		err = closeErr
+	}
+	if err != nil {
+		os.Remove(path)
+	}
+	return err
+}
+func projectModuleName(name string) string {
+	var b strings.Builder
+	for _, r := range name {
+		if isIdPart(r) {
+			b.WriteRune(r)
+		} else {
+			b.WriteByte('_')
+		}
+	}
+	name = b.String()
+	if name == "" {
+		return "app"
+	}
+	if !isIdStart([]rune(name)[0]) || keywords[name] {
+		return "_" + name
+	}
+	return name
+}
 func cmdNew(pos []string, tpl string) int {
+	fail := func(err error) int { fmt.Fprintln(os.Stderr, "创建项目失败:", err); return 1 }
 	if len(pos) < 1 {
 		fmt.Println("用法: aether new <项目目录> [--template blank|todo|shop|blog|crm]")
 		for _, t := range Templates {
@@ -65,11 +101,15 @@ func cmdNew(pos []string, tpl string) int {
 		return 2
 	}
 	target := filepath.Clean(pos[0])
-	if strings.HasSuffix(strings.ToLower(target), ".ae") { // v0.1 behaviour: single file
-		tpl = "blank"
-		b, _ := templatesFS.ReadFile("templates/blank/main.ae")
-		name := strings.TrimSuffix(filepath.Base(target), ".ae")
-		os.WriteFile(target, []byte(strings.Replace(string(b), "module 我的应用", "module "+name, 1)), 0644)
+	if strings.EqualFold(filepath.Ext(target), ".ae") {
+		b, err := templatesFS.ReadFile("templates/blank/main.ae")
+		if err != nil {
+			return fail(err)
+		}
+		name := projectModuleName(strings.TrimSuffix(filepath.Base(target), filepath.Ext(target)))
+		if err := writeNewFile(target, []byte(strings.Replace(string(b), "module 我的应用", "module "+name, 1)), 0644); err != nil {
+			return fail(err)
+		}
 		fmt.Println("created", target, "->  aether ui", target)
 		return 0
 	}
@@ -83,36 +123,66 @@ func cmdNew(pos []string, tpl string) int {
 		fmt.Fprintln(os.Stderr, "未知模板", tpl)
 		return 2
 	}
-	if ents, _ := os.ReadDir(target); len(ents) > 0 {
-		fmt.Fprintln(os.Stderr, "目录不为空:", target)
-		return 1
+	ents, err := os.ReadDir(target)
+	if err != nil && !os.IsNotExist(err) {
+		return fail(err)
 	}
-	os.MkdirAll(filepath.Join(target, ".vscode"), 0755)
+	if len(ents) > 0 {
+		return fail(fmt.Errorf("目录不为空: %s", target))
+	}
 	name := filepath.Base(target)
-	fs.WalkDir(templatesFS, "templates/"+t.ID, func(p string, d fs.DirEntry, err error) error {
-		if err != nil || d.IsDir() {
+	files := map[string][]byte{}
+	err = fs.WalkDir(templatesFS, "templates/"+t.ID, func(p string, d fs.DirEntry, err error) error {
+		if err != nil {
+			return err
+		}
+		if d.IsDir() {
 			return nil
 		}
-		b, _ := templatesFS.ReadFile(p)
-		os.WriteFile(filepath.Join(target, strings.TrimPrefix(p, "templates/"+t.ID+"/")), b, 0644)
+		b, err := templatesFS.ReadFile(p)
+		if err != nil {
+			return err
+		}
+		files[strings.TrimPrefix(p, "templates/"+t.ID+"/")] = b
 		return nil
 	})
-	writeJSONFile(filepath.Join(target, "aether.json"), Manifest{Name: name, Version: "0.1.0", Main: "main.ae", Description: t.Title, Dependencies: map[string]string{}})
-	os.WriteFile(filepath.Join(target, "README.md"), []byte(tutorial(*t, name)), 0644)
-	os.WriteFile(filepath.Join(target, ".vscode", "launch.json"), []byte(`{
+	if err != nil {
+		return fail(err)
+	}
+	manifest, err := json.MarshalIndent(Manifest{Name: name, Version: "0.1.0", Main: "main.ae", Description: t.Title, Dependencies: map[string]string{}}, "", "  ")
+	if err != nil {
+		return fail(err)
+	}
+	files["aether.json"] = append(manifest, '\n')
+	files["README.md"] = []byte(tutorial(*t, name))
+	files[".vscode/launch.json"] = []byte(`{
   "version": "0.2.0",
   "configurations": [
     {"type": "aether", "request": "launch", "name": "Aether: 调试运行", "program": "${workspaceFolder}/main.ae", "mode": "run"},
     {"type": "aether", "request": "launch", "name": "Aether: 调试测试", "program": "${workspaceFolder}/main.ae", "mode": "test"}
   ]
 }
-`), 0644)
-	if mb, err := os.ReadFile(filepath.Join(target, "main.ae")); err == nil {
-		if md, err := AgentsMD(string(mb), "main.ae"); err == nil {
-			os.WriteFile(filepath.Join(target, "AGENTS.md"), []byte(md), 0644)
+`)
+	md, err := AgentsMD(string(files["main.ae"]), "main.ae")
+	if err != nil {
+		return fail(err)
+	}
+	files["AGENTS.md"] = []byte(md)
+	files[".gitignore"] = []byte("*.aedb\n*.history.json\naether_modules/\ndist/\n")
+	names := make([]string, 0, len(files))
+	for n := range files {
+		names = append(names, n)
+	}
+	sort.Strings(names)
+	for _, n := range names {
+		path := filepath.Join(target, filepath.FromSlash(n))
+		if err := os.MkdirAll(filepath.Dir(path), 0755); err != nil {
+			return fail(err)
+		}
+		if err := writeNewFile(path, files[n], 0644); err != nil {
+			return fail(err)
 		}
 	}
-	os.WriteFile(filepath.Join(target, ".gitignore"), []byte("*.aedb\n*.history.json\naether_modules/\ndist/\n"), 0644)
 	fmt.Printf("已创建项目 %s（模板：%s）\n  下一步：cd %s && aether ui main.ae   或用 Aether IDE 打开该文件夹\n", target, t.Title, target)
 	return 0
 }

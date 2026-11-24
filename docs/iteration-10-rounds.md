@@ -65,3 +65,10 @@
 验证：TestIterationLSPFraming、TestIterationLSPEditConsistency PASS，涵盖中文及扩展汉字有效替换、多编辑失败不更新版本（round09-green.log）。
 反思：LSP 是 IDE 的状态边界，不能只测 hover 成功；16 MiB 超大文件需要拆分，未在 VS Code GUI 实测。
 
+## 第10轮：新手建项目不覆盖源码、不假报成功
+证据：aether new existing.ae 无条件覆盖文件；缺失父目录或目标为普通文件时仍报告创建成功；123-中文应用.AE 生成非法模块名。先红。
+实现：所有新项目文件使用 O_EXCL 排他创建，检查读取/遍历/建目录/写入/关闭错误；文件均先在内存准备、按稳定顺序写出；单文件模块名规范化并处理大小写扩展名；错误非零退出，不覆盖已有用户数据。
+验证：TestIterationNewSafety、TestIterationNewTemplates（全部5模板，包含 AGENTS.md/manifest/调试配置）与已有中文路径回归 PASS（round10-green.log）。
+反思：代码生成器也是数据安全边界；失败可能留下已生成的部分文件供检查，未宣称整个项目目录写入具备事务原子性。
+
+## 最终验证与交付（继续填充实际结果）
