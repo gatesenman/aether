@@ -28,6 +28,10 @@ func (e *AeError) JSON() map[string]any {
 	return map[string]any{"severity": "error", "code": e.Code, "message": e.Msg, "line": e.Line, "col": e.Col}
 }
 
+// The sole magnitude just outside positive Int64 is retained until the parser
+// can see whether it belongs to unary minus (the valid minimum signed integer).
+type minIntMagnitude struct{}
+
 type Tok struct {
 	Kind                string // num str id kw op eof
 	Val                 any
@@ -92,9 +96,13 @@ func Lex(src string) ([]Tok, error) {
 			} else {
 				n, err := strconv.ParseInt(s, 10, 64)
 				if err != nil {
-					return nil, &AeError{"E001", "integer literal out of range", line, col}
+					if s != "9223372036854775808" {
+						return nil, &AeError{"E001", "integer literal out of range", line, col}
+					}
+					v = minIntMagnitude{}
+				} else {
+					v = n
 				}
-				v = n
 			}
 			toks = append(toks, Tok{"num", v, s, line, col, bpos[i], bpos[j]})
 			i = j

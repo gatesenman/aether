@@ -520,6 +520,10 @@ func (p *Parser) unary() Node {
 	defer p.leave()
 	t := p.peek(0)
 	if p.accept("-") {
+		if _, ok := p.peek(0).Val.(minIntMagnitude); ok {
+			p.next()
+			return nd("Num", t.Line, "v", int64(-9223372036854775808))
+		}
 		return nd("Unary", t.Line, "op", "-", "e", p.unary())
 	}
 	if p.accept("not", "!") {
@@ -564,6 +568,9 @@ func (p *Parser) primary() Node {
 	L := t.Line
 	switch t.Kind {
 	case "num":
+		if _, ok := t.Val.(minIntMagnitude); ok {
+			throw(&AeError{"E001", "integer literal out of range", L, t.Col})
+		}
 		return nd("Num", L, "v", t.Val)
 	case "str":
 		return p.strlit(t)
@@ -657,6 +664,8 @@ func (p *Parser) pattern() Node {
 	if p.accept("-") {
 		n := p.next()
 		switch v := n.Val.(type) {
+		case minIntMagnitude:
+			return Node{"k": "PLit", "v": int64(-9223372036854775808)}
 		case int64:
 			return Node{"k": "PLit", "v": -v}
 		case float64:
