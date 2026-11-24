@@ -1,11 +1,16 @@
 """v0.3: 原生二进制一致性测试（以 Python 参考实现生成的 golden.json 为规范）。找不到二进制则跳过。"""
-import os, shutil, subprocess, unittest
+import os, re, shutil, subprocess, unittest
+from pathlib import Path
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 def find_bin():
     for p in [os.environ.get("AETHER_NATIVE", ""), os.path.join(ROOT, "native", "build", "aether-linux-amd64"), os.path.join(ROOT, "native", "aether"), "/tmp/ae", shutil.which("aether-native") or ""]:
         if p and os.path.isfile(p) and os.access(p, os.X_OK):
             return p
 BIN = find_bin()
+# These are historical feature regressions, not assertions that the binary must
+# remain at the old release that introduced them.
+NATIVE_VERSION = re.search(r'^const Version = "([^"]+)"',
+    Path(ROOT, "native", "cli.go").read_text(encoding="utf-8"), re.MULTILINE).group(1)
 
 @unittest.skipUnless(BIN, "native binary not built")
 class NativeConformance(unittest.TestCase):
@@ -22,7 +27,8 @@ class NativeConformance(unittest.TestCase):
                     self.assertEqual(r.returncode, 0, f"{cmd} {f}: {r.stdout}{r.stderr}")
     def test_static(self):
         r = subprocess.run([BIN, "version"], capture_output=True, text=True)
-        self.assertRegex(r.stdout, r"0\.5\.\d+")
+        self.assertEqual(r.returncode, 0, r.stderr)
+        self.assertEqual(r.stdout.strip(), f"aether {NATIVE_VERSION} (native)")
 
 if __name__ == "__main__":
     unittest.main()

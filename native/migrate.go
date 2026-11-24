@@ -91,6 +91,13 @@ func typeOK(ty string, v Value) bool {
 
 // PlanMigration compares the entities in it (already loaded) with the raw rows in its store.
 func PlanMigration(it *Interp) []MigStep {
+	// Default/invariant expressions may call functions; planning must not permit
+	// those functions to mutate the very database being inspected.
+	it.Store.mu.Lock()
+	oldReadOnly := it.Store.readOnly
+	it.Store.readOnly = true
+	it.Store.mu.Unlock()
+	defer func() { it.Store.mu.Lock(); it.Store.readOnly = oldReadOnly; it.Store.mu.Unlock() }()
 	steps := []MigStep{}
 	declared := map[string]bool{}
 	for _, en := range it.EntOrder {

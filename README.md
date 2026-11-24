@@ -35,6 +35,10 @@ aether serve        # 或 aether studio / aether ui
 ```
 也可用可编辑安装：`pip install -e .`（见 `pyproject.toml`）。原生运行时见 `native/`。
 
+## 本地十轮加固（尚未发布）
+
+本工作树完成十轮原生运行时与工具链修复，保持 0.6.0 版本号，不代表已经更新 GitHub 或安装包。具体证据、兼容性收紧、复测命令与未验证事项见 [十轮迭代记录](docs/iteration-10-rounds.md)。
+
 ## 文档
 
 - [docs/evolution-0.6.md](docs/evolution-0.6.md)

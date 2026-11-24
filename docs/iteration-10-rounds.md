@@ -72,3 +72,7 @@
 反思：代码生成器也是数据安全边界；失败可能留下已生成的部分文件供检查，未宣称整个项目目录写入具备事务原子性。
 
 ## 最终验证与交付（继续填充实际结果）
+- 首次最终 Go 全量：PASS；TestX11ClipboardCrossClient 本次通过，但 TestX11ClipboardRead 为原有 live-only 跳过，不能计作通过。
+- 首次开启本次原生二进制的 Python 全量：68 tests，2 failures、0 skipped；两个旧测试硬编码要求 0.5.x/0.5.1，与基点已有 0.6.0 不符。已修测试为严格比对 native/cli.go 的实际声明版本，而非删掉版本断言；不修改产品版本。详见 final-python.log，修后另存 final-python-rerun.log。
+- 测试辅助脚本移除固定 /workspace 路径，非 Linux 无 /dev/shm 时退回普通 go test。
+- 最终复查延伸第5/8轮：CLI migrate 也复用了普通 OpenStore，顶层 insert 会在“计划”时写入；默认值函数同样可能写库。补充真实红绿回归 final-migration-safety-red/green.log：CLI 计划使用无修复只读快照、不创建缺失数据库；加载阶段禁止顶层写入，PlanMigration 全程禁止默认值/invariant 写库。--apply 仍需显式授权执行。此项是对已有两轮保证的复查补齐，不另凑轮数。

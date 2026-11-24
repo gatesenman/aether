@@ -1,7 +1,7 @@
 """v0.5.1: doctor, CRLF sources, Chinese paths, store compact, Windows-style separators in new."""
 import json, os, subprocess, sys, tempfile, unittest
 sys.path.insert(0, os.path.dirname(__file__))
-from test_native import BIN, ROOT
+from test_native import BIN, ROOT, NATIVE_VERSION
 
 def run(*a, cwd=None, env=None, timeout=60):
     return subprocess.run([BIN, *a], capture_output=True, text=True, cwd=cwd, env=env, timeout=timeout)
@@ -14,7 +14,7 @@ class V051(unittest.TestCase):
     def test_version(self):
         r = run("version")
         self.assertEqual(r.returncode, 0)
-        self.assertIn("0.5.1", r.stdout)
+        self.assertEqual(r.stdout.strip(), f"aether {NATIVE_VERSION} (native)")
 
     def test_doctor(self):
         r = run("doctor")

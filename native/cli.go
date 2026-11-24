@@ -465,9 +465,23 @@ func runCLI(args []string) int {
 		if d == "" {
 			d = defaultDB(file)
 		}
-		it := NewInterp(d, false)
-		defer it.Store.Close()
-		if err := it.Load(src, dir); err != nil {
+		var store *Store
+		var err error
+		if *applyF {
+			store, err = OpenStore(d)
+		} else {
+			store, err = OpenStoreReadOnly(d)
+		}
+		if err != nil {
+			return printErr(file, err)
+		}
+		defer store.Close()
+		it := newInterpWithStore(store, false)
+		oldReadOnly := store.readOnly
+		store.readOnly = true
+		err = it.Load(src, dir)
+		store.readOnly = oldReadOnly
+		if err != nil {
 			return printErr(file, err)
 		}
 		return cmdMigrate(it, *asJSON, *applyF, *dropF)
