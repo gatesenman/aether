@@ -29,16 +29,18 @@ func (e *AeError) JSON() map[string]any {
 }
 
 type Tok struct {
-	Kind string // num str id kw op eof
-	Val  any
-	S    string
+	Kind                string // num str id kw op eof
+	Val                 any
+	S                   string
 	Line, Col, Pos, End int
 }
 
 var ops3 = []string{"|>", "=>", "->", "==", "!=", "<=", ">=", "+=", "-="}
 
-func isIdStart(r rune) bool { return r == '_' || unicode.IsLetter(r) && r < 128 || (r >= 0x4e00 && r <= 0x9fff) }
-func isIdPart(r rune) bool  { return isIdStart(r) || (r >= '0' && r <= '9') }
+func isIdStart(r rune) bool {
+	return r == '_' || unicode.IsLetter(r) && r < 128 || (r >= 0x4e00 && r <= 0x9fff)
+}
+func isIdPart(r rune) bool { return isIdStart(r) || (r >= '0' && r <= '9') }
 
 func Lex(src string) ([]Tok, error) {
 	rs := []rune(src)
@@ -82,10 +84,16 @@ func Lex(src string) ([]Tok, error) {
 			s := string(rs[i:j])
 			var v any
 			if isF {
-				f, _ := strconv.ParseFloat(s, 64)
+				f, err := strconv.ParseFloat(s, 64)
+				if err != nil {
+					return nil, &AeError{"E001", "numeric literal out of range", line, col}
+				}
 				v = f
 			} else {
-				n, _ := strconv.ParseInt(s, 10, 64)
+				n, err := strconv.ParseInt(s, 10, 64)
+				if err != nil {
+					return nil, &AeError{"E001", "integer literal out of range", line, col}
+				}
 				v = n
 			}
 			toks = append(toks, Tok{"num", v, s, line, col, bpos[i], bpos[j]})
